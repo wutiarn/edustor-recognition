@@ -1,6 +1,7 @@
 package ru.wtrn.edustor.edustorrecognition.util
 
 import com.spire.pdf.PdfDocument
+import com.spire.pdf.graphics.PdfImageType
 import java.awt.image.BufferedImage
 import java.io.InputStream
 
@@ -23,6 +24,6 @@ class PdfRenderer(pdfStream: InputStream, resolution: Int = 150) : Iterator<Buff
     override fun next(): BufferedImage {
         if (!hasNext()) throw NoSuchElementException()
         val curPage = nextPage++
-        return pdfDocument.saveAsImage(curPage)
+        return pdfDocument.saveAsImage(curPage, PdfImageType.Bitmap, 300, 300)
     }
 }
