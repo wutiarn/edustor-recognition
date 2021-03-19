@@ -26,13 +26,14 @@ class QRMarkersDetector(private val image: BufferedImage) {
 
         return QrArea(
                 points = rect.toPointsArray(),
-                angle = 0.0
+                angle = 0.0 // TODO: Calculate actual qr code rotation
         )
     }
 
     internal fun loadMat(): LoadedImageMat {
         val srcMat = image.toMat()
         val mat = Mat()
+        Imgproc.cvtColor(srcMat, srcMat, Imgproc.COLOR_RGBA2RGB)
         Imgproc.cvtColor(srcMat, mat, Imgproc.COLOR_RGB2GRAY)
         Imgproc.blur(mat, mat, Size(3.0, 3.0))
         Core.bitwise_not(mat, mat)
