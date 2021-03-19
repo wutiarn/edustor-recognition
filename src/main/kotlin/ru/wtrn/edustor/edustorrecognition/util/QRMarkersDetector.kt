@@ -2,6 +2,7 @@ package ru.wtrn.edustor.edustorrecognition.util
 
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
+import java.lang.IllegalArgumentException
 
 class QRMarkersDetector(private val imageBytes: ByteArray) {
 
@@ -13,7 +14,6 @@ class QRMarkersDetector(private val imageBytes: ByteArray) {
     internal val mat: Mat
 
     private val parentsCache = HashMap<Int, Int>()
-    val qrCenterPoints: List<Point>
 
     companion object {
         init {
@@ -59,15 +59,20 @@ class QRMarkersDetector(private val imageBytes: ByteArray) {
                     val point2f = MatOfPoint2f()
                     it.convertTo(point2f, CvType.CV_32FC2)
                     val rect = Imgproc.minAreaRect(point2f)
-
-                    val vertices = arrayOfNulls<Point>(4)
-                    rect.points(vertices)
-                    MatOfPoint(*vertices)
+                    rect.toMatOfPoint()
                 }
-
-        qrCenterPoints = qrMarkers.map { calculateMassCenter(it) }
+        if (qrMarkers.size != 3) {
+            throw IllegalArgumentException("Cannot detect QR code: found ${qrMarkers.size} markers")
+        }
     }
 
+    fun findQrArea(): RotatedRect {
+        val concatMat = MatOfPoint()
+        Core.vconcat(qrMarkers, concatMat)
+        val mat2f = MatOfPoint2f()
+        concatMat.convertTo(mat2f, CvType.CV_32FC2)
+        return Imgproc.minAreaRect(mat2f)
+    }
 
     internal fun calculateParentsCount(contourIndex: Int): Int {
         parentsCache[contourIndex]?.let {
@@ -84,14 +89,6 @@ class QRMarkersDetector(private val imageBytes: ByteArray) {
         val parentsCount = calculateParentsCount(parentIndex.toInt()) + 1
         parentsCache[contourIndex] = parentsCount
         return parentsCount
-    }
-
-    private fun calculateMassCenter(contour: MatOfPoint): Point {
-        val moments = Imgproc.moments(contour)
-        val centroid = Point()
-        centroid.x = moments._m10 / moments._m00;
-        centroid.y = moments._m01 / moments._m00;
-        return centroid
     }
 
     private fun getParentIndex(childIndex: Int): Int? {
