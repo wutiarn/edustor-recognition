@@ -1,0 +1,27 @@
+package ru.wtrn.edustor.edustorrecognition.util
+
+import org.opencv.core.Mat
+import org.opencv.core.MatOfByte
+import org.opencv.imgcodecs.Imgcodecs
+import java.awt.image.BufferedImage
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
+
+fun BufferedImage.toMat(): Mat {
+    val byteArrayOutputStream = ByteArrayOutputStream()
+    ImageIO.write(this, "png", byteArrayOutputStream)
+    byteArrayOutputStream.flush()
+    val matOfByte = MatOfByte(*byteArrayOutputStream.toByteArray())
+    return Imgcodecs.imdecode(matOfByte, Imgcodecs.IMREAD_UNCHANGED)
+}
+
+fun Mat.toPng(): ByteArray {
+    val mob = MatOfByte()
+    Imgcodecs.imencode(".jpg", this, mob)
+    return mob.toArray()
+}
+
+fun Mat.toBufferedImage(): BufferedImage {
+    return ImageIO.read(ByteArrayInputStream(this.toPng()))
+}
