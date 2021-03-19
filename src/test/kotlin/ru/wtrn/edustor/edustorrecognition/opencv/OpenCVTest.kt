@@ -24,12 +24,13 @@ class OpenCVTest {
         Imgproc.blur(mat, mat, Size(3.0, 3.0))
         Imgproc.Canny(mat, mat, 5.0, 30.0, 3, false)
 
-        val dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(5.0, 5.0))
+        val dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(3.0, 3.0))
         Imgproc.dilate(mat, mat, dilateElement);
 
         val lines = Mat()
-        val thetaModifier = Math.PI / 180 * 80
-        Imgproc.HoughLines(mat, lines, 1.0, Math.PI / 180, 1350, 0.0, 0.0, 0.0 + thetaModifier, thetaModifier + Math.PI / 180 * 20)
+        val thetaRotation = 0
+        val thetaRotationModifier = Math.PI / 180 * (thetaRotation - 10)
+        Imgproc.HoughLines(mat, lines, 1.0, Math.PI / 180, 1000, 0.0, 0.0, 0.0 + thetaRotationModifier, thetaRotationModifier + Math.PI / 180 * 45)
 
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB)
 
