@@ -63,7 +63,6 @@ class QRMarkersDetector(private val image: BufferedImage) {
         val hierarchy = Mat()
 
         Imgproc.findContours(mat, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB)
 
         val parentsCache = HashMap<Int, Int>()
 
