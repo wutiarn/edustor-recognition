@@ -22,7 +22,7 @@ fun BufferedImage.toMat(): Mat {
 
 fun Mat.toPng(): ByteArray {
     val mob = MatOfByte()
-    Imgcodecs.imencode(".jpg", this, mob)
+    Imgcodecs.imencode(".png", this, mob)
     return mob.toArray()
 }
 
