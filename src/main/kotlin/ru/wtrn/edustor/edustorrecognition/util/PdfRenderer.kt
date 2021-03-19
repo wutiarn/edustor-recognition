@@ -3,9 +3,10 @@ package ru.wtrn.edustor.edustorrecognition.util
 import com.spire.pdf.PdfDocument
 import com.spire.pdf.graphics.PdfImageType
 import java.awt.image.BufferedImage
+import java.io.Closeable
 import java.io.InputStream
 
-class PdfRenderer(pdfStream: InputStream, resolution: Int = 150) : Iterator<BufferedImage> {
+class PdfRenderer(pdfStream: InputStream, resolution: Int = 150) : Iterator<BufferedImage>, Closeable {
     val pdfDocument: PdfDocument
 
     var nextPage = 0
@@ -25,5 +26,9 @@ class PdfRenderer(pdfStream: InputStream, resolution: Int = 150) : Iterator<Buff
         if (!hasNext()) throw NoSuchElementException()
         val curPage = nextPage++
         return pdfDocument.saveAsImage(curPage, PdfImageType.Bitmap, 300, 300)
+    }
+
+    override fun close() {
+        pdfDocument.close()
     }
 }

@@ -8,12 +8,16 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
+fun ByteArray.toImageMat(): Mat {
+    val matOfByte = MatOfByte(*this)
+    return Imgcodecs.imdecode(matOfByte, Imgcodecs.IMREAD_UNCHANGED)
+}
+
 fun BufferedImage.toMat(): Mat {
     val byteArrayOutputStream = ByteArrayOutputStream()
     ImageIO.write(this, "png", byteArrayOutputStream)
     byteArrayOutputStream.flush()
-    val matOfByte = MatOfByte(*byteArrayOutputStream.toByteArray())
-    return Imgcodecs.imdecode(matOfByte, Imgcodecs.IMREAD_UNCHANGED)
+    return byteArrayOutputStream.toByteArray().toImageMat()
 }
 
 fun Mat.toPng(): ByteArray {
