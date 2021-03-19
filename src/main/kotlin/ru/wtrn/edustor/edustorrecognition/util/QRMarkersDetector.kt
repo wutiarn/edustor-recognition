@@ -7,6 +7,7 @@ class QRMarkersDetector(private val imageBytes: ByteArray) {
 
     internal val contours = ArrayList<MatOfPoint>()
     internal val hierarchy = Mat()
+    internal val qrMarkers: List<MatOfPoint>
 
     internal val srcMat: Mat
     internal val mat: Mat
@@ -44,7 +45,7 @@ class QRMarkersDetector(private val imageBytes: ByteArray) {
         Imgproc.findContours(mat, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB)
 
-        val qrMarkers = contours.filterIndexed { i, _ ->
+        qrMarkers = contours.filterIndexed { i, _ ->
             calculateParentsCount(contourIndex = i) >= 5
         }
 
