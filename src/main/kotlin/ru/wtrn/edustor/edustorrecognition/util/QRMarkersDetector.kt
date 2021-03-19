@@ -45,9 +45,16 @@ class QRMarkersDetector(private val imageBytes: ByteArray) {
         Imgproc.findContours(mat, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB)
 
-        qrMarkers = contours.filterIndexed { i, _ ->
-            calculateParentsCount(contourIndex = i) >= 5
-        }
+        qrMarkers = contours.filterIndexed { i, _ -> calculateParentsCount(contourIndex = i) >= 5 }
+                .map {
+                    val point2f = MatOfPoint2f()
+                    it.convertTo(point2f, CvType.CV_32FC2)
+                    val rect = Imgproc.minAreaRect(point2f)
+
+                    val vertices = arrayOfNulls<Point>(4)
+                    rect.points(vertices)
+                    MatOfPoint(*vertices)
+                }
 
         qrCenterPoints = qrMarkers.map { calculateMassCenter(it) }
     }
