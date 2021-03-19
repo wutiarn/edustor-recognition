@@ -30,7 +30,7 @@ internal class QRMarkersDetectorTest {
         File(outDirectory, "03_markers.png").writeBytes(srcMat.toPng())
 
         val qrArea = detector.findQrArea()
-        Imgproc.drawContours(srcMat, listOf(MatOfPoint(*qrArea)), 0, color, 1)
+        Imgproc.drawContours(srcMat, listOf(qrArea.toMatOfPoint()), 0, color, 1)
         File(outDirectory, "04_qr_area.png").writeBytes(srcMat.toPng())
     }
 }

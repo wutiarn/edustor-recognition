@@ -13,7 +13,7 @@ class QRMarkersDetector(private val image: BufferedImage) {
         }
     }
 
-    fun findQrArea(): Array<Point> {
+    fun findQrArea(): RotatedRect {
         val qrMarkers: List<MatOfPoint> = findContours().qrMarkers
         if (qrMarkers.size != 3) {
             throw IllegalArgumentException("Cannot detect QR code: found ${qrMarkers.size} markers")
@@ -22,7 +22,7 @@ class QRMarkersDetector(private val image: BufferedImage) {
         Core.vconcat(qrMarkers, concatMat)
         val mat2f = MatOfPoint2f()
         concatMat.convertTo(mat2f, CvType.CV_32FC2)
-        return Imgproc.minAreaRect(mat2f).toPointsArray()
+        return Imgproc.minAreaRect(mat2f)
     }
 
     internal fun loadMat(): LoadedImageMat {
