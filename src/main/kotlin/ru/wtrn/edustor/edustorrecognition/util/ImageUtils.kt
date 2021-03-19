@@ -13,6 +13,10 @@ fun ByteArray.toImageMat(): Mat {
     return Imgcodecs.imdecode(matOfByte, Imgcodecs.IMREAD_UNCHANGED)
 }
 
+fun ByteArray.toBufferedImage(): BufferedImage {
+    return ImageIO.read(ByteArrayInputStream(this))
+}
+
 fun BufferedImage.toMat(): Mat {
     val byteArrayOutputStream = ByteArrayOutputStream()
     ImageIO.write(this, "png", byteArrayOutputStream)
@@ -27,5 +31,5 @@ fun Mat.toPng(): ByteArray {
 }
 
 fun Mat.toBufferedImage(): BufferedImage {
-    return ImageIO.read(ByteArrayInputStream(this.toPng()))
+    return this.toPng().toBufferedImage()
 }

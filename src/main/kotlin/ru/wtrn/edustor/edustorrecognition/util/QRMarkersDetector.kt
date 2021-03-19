@@ -2,18 +2,10 @@ package ru.wtrn.edustor.edustorrecognition.util
 
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
+import java.awt.image.BufferedImage
 import java.lang.IllegalArgumentException
 
-class QRMarkersDetector(private val imageBytes: ByteArray) {
-//
-//    internal val contours = ArrayList<MatOfPoint>()
-//    internal val hierarchy = Mat()
-//    internal val qrMarkers: List<MatOfPoint>
-//
-//    internal val srcMat: Mat
-//    internal val mat: Mat
-//
-//    private val parentsCache = HashMap<Int, Int>()
+class QRMarkersDetector(private val image: BufferedImage) {
 
     companion object {
         init {
@@ -21,7 +13,7 @@ class QRMarkersDetector(private val imageBytes: ByteArray) {
         }
     }
 
-    fun findQrArea(): RotatedRect {
+    fun findQrArea(): Array<Point> {
         val qrMarkers: List<MatOfPoint> = findContours().qrMarkers
         if (qrMarkers.size != 3) {
             throw IllegalArgumentException("Cannot detect QR code: found ${qrMarkers.size} markers")
@@ -30,11 +22,11 @@ class QRMarkersDetector(private val imageBytes: ByteArray) {
         Core.vconcat(qrMarkers, concatMat)
         val mat2f = MatOfPoint2f()
         concatMat.convertTo(mat2f, CvType.CV_32FC2)
-        return Imgproc.minAreaRect(mat2f)
+        return Imgproc.minAreaRect(mat2f).toPointsArray()
     }
 
     internal fun loadMat(): LoadedImageMat {
-        val srcMat = imageBytes.toImageMat()
+        val srcMat = image.toMat()
         val mat = Mat()
         Imgproc.cvtColor(srcMat, mat, Imgproc.COLOR_RGB2GRAY)
         Imgproc.blur(mat, mat, Size(3.0, 3.0))

@@ -1,6 +1,7 @@
 package ru.wtrn.edustor.edustorrecognition.util
 
 import org.junit.jupiter.api.Test
+import org.opencv.core.MatOfPoint
 import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
 import java.io.File
@@ -13,8 +14,8 @@ internal class QRMarkersDetectorTest {
 
     @Test
     fun testQrMarkersDetection() {
-        val imageBytes = javaClass.getResource("/test_page.png").readBytes()
-        val detector = QRMarkersDetector(imageBytes)
+        val image = javaClass.getResource("/test_page.png").readBytes().toBufferedImage()
+        val detector = QRMarkersDetector(image)
 
         val (mat, srcMat) = detector.loadMat()
         File(outDirectory, "01_raw.png").writeBytes(srcMat.toPng())
@@ -28,7 +29,8 @@ internal class QRMarkersDetectorTest {
         }
         File(outDirectory, "03_markers.png").writeBytes(srcMat.toPng())
 
-        Imgproc.drawContours(srcMat, listOf(detector.findQrArea().toMatOfPoint()), 0, color, 1)
+        val qrArea = detector.findQrArea()
+        Imgproc.drawContours(srcMat, listOf(MatOfPoint(*qrArea)), 0, color, 1)
         File(outDirectory, "04_qr_area.png").writeBytes(srcMat.toPng())
     }
 }
