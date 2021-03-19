@@ -45,7 +45,16 @@ class QRMarkersDetector(private val imageBytes: ByteArray) {
         Imgproc.findContours(mat, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB)
 
-        qrMarkers = contours.filterIndexed { i, _ -> calculateParentsCount(contourIndex = i) >= 5 }
+        qrMarkers = contours
+                .mapIndexedNotNull { i, _ ->
+                    val parentsCount = calculateParentsCount(contourIndex = i)
+                    if (parentsCount < 5) {
+                        return@mapIndexedNotNull null
+                    }
+                    val rootIndex = (0 until parentsCount)
+                            .fold(i) { childIndex, _ -> getParentIndex(childIndex)!! }
+                    contours[rootIndex]
+                }
                 .map {
                     val point2f = MatOfPoint2f()
                     it.convertTo(point2f, CvType.CV_32FC2)
@@ -83,5 +92,14 @@ class QRMarkersDetector(private val imageBytes: ByteArray) {
         centroid.x = moments._m10 / moments._m00;
         centroid.y = moments._m01 / moments._m00;
         return centroid
+    }
+
+    private fun getParentIndex(childIndex: Int): Int? {
+        val hierarchyMeta = hierarchy[0, childIndex]
+        val parentIndex = hierarchyMeta[3]
+        return when {
+            parentIndex < 0 -> null
+            else -> parentIndex.toInt()
+        }
     }
 }
