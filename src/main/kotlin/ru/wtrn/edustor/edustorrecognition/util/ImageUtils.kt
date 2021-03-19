@@ -17,11 +17,15 @@ fun ByteArray.toBufferedImage(): BufferedImage {
     return ImageIO.read(ByteArrayInputStream(this))
 }
 
-fun BufferedImage.toMat(): Mat {
+fun BufferedImage.toPng(): ByteArray {
     val byteArrayOutputStream = ByteArrayOutputStream()
     ImageIO.write(this, "png", byteArrayOutputStream)
     byteArrayOutputStream.flush()
-    return byteArrayOutputStream.toByteArray().toImageMat()
+    return byteArrayOutputStream.toByteArray()
+}
+
+fun BufferedImage.toMat(): Mat {
+    return this.toPng().toImageMat()
 }
 
 fun Mat.toPng(): ByteArray {
