@@ -25,6 +25,9 @@ class OpenCVTest {
         Imgproc.blur(mat, mat, Size(3.0, 3.0))
         Imgproc.Canny(mat, mat, 5.0, 30.0, 3, false)
 
+        val dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(5.0, 5.0))
+        Imgproc.dilate(mat, mat, dilateElement);
+
         val resultBytes = mat.toPng()
         val outFile = File(outDirectory, "opencv.png").writeBytes(resultBytes)
     }
