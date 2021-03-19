@@ -8,9 +8,9 @@ import ru.wtrn.edustor.edustorrecognition.util.toPng
 import java.io.File
 
 
-class OpenCVTest {
+class OpenCVHoughLineTest {
 
-    private val outDirectory = File("build/test-results/img").also {
+    private val outDirectory = File("build/test-results/img/hough-line").also {
         it.mkdirs()
     }
 
