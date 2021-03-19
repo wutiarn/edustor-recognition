@@ -16,14 +16,19 @@ internal class QRMarkersDetectorTest {
         val imageBytes = javaClass.getResource("/test_page.png").readBytes()
         val detector = QRMarkersDetector(imageBytes)
 
-        detector.qrMarkers.forEachIndexed { i, contour ->
-            val color = Scalar(0.0, 255.0, 0.0)
-            Imgproc.drawContours(detector.mat, detector.qrMarkers, i, color, 1)
-            Imgproc.drawContours(detector.srcMat, detector.qrMarkers, i, color, 1)
-            Imgproc.drawContours(detector.srcMat, listOf(detector.findQrArea().toMatOfPoint()), 0, color, 1)
-        }
+        val (mat, srcMat) = detector.loadMat()
+        File(outDirectory, "01_raw.png").writeBytes(srcMat.toPng())
+        File(outDirectory, "02_preprocessed.png").writeBytes(mat.toPng())
 
-        File(outDirectory, "result.png").writeBytes(detector.srcMat.toPng())
-        File(outDirectory, "mat.png").writeBytes(detector.mat.toPng())
+        val (qrMarkers, contours, hierarchy) = detector.findContours()
+
+        val color = Scalar(0.0, 255.0, 0.0)
+        qrMarkers.forEachIndexed { i, contour ->
+            Imgproc.drawContours(srcMat, qrMarkers, i, color, 1)
+        }
+        File(outDirectory, "03_markers.png").writeBytes(srcMat.toPng())
+
+        Imgproc.drawContours(srcMat, listOf(detector.findQrArea().toMatOfPoint()), 0, color, 1)
+        File(outDirectory, "04_qr_area.png").writeBytes(srcMat.toPng())
     }
 }
