@@ -101,7 +101,15 @@ class QRMarkersDetector() {
     }
 
     private fun validateQrMarker(internalContour: RotatedRect, externalContour: RotatedRect): Boolean {
+        if (!validateQrMarker(internalContour) || !validateQrMarker(externalContour)) {
+            return false
+        }
         return true // TODO: Implement marker valiation
+    }
+
+    private fun validateQrMarker(contour: RotatedRect): Boolean {
+        val aspectRatio = contour.size.width / contour.size.height
+        return Math.abs(aspectRatio - 1.0) < 0.2
     }
 
     internal fun calculateParentsCount(contourIndex: Int, hierarchy: Mat, parentsCache: HashMap<Int, Int>): Int {
