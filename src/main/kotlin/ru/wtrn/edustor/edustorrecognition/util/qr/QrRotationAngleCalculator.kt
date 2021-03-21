@@ -45,7 +45,15 @@ object QrRotationAngleCalculator {
 
     private fun calculatePerpendicularDistance(point: Point, lineP1: Point, lineP2: Point): Double {
         // See https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
-        return abs((lineP2.x - lineP1.x) * (lineP1.y - point.y) - (lineP1.x - point.x) * (lineP2.y - lineP1.y)) /
+        val slope = calculateSlope(lineP1, lineP2)
+        val a = -1 * slope
+        val b = 1.0
+        val c = (slope * lineP2.x) - lineP2.y
+
+        val dist = (a * point.x + b * point.y + c) / sqrt(a.pow(2) + b.pow(2))
+
+        val wikiFormula = abs((lineP2.x - lineP1.x) * (lineP1.y - point.y) - (lineP1.x - point.x) * (lineP2.y - lineP1.y)) /
                 sqrt((lineP2.x - lineP1.x).pow(2) + (lineP2.y - lineP1.y).pow(2))
+        return dist
     }
 }
