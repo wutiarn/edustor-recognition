@@ -30,28 +30,20 @@ internal class QRMarkersDetectorTest {
     }
 
     @Test
+    fun testRotatedPage() {
+        val detectionResult = testQrMarkersDetection("rotated_page.png", "https://edustor.wtrn.ru/p/PUNOrbAi9Kdi919XEGxcCGBXnb0B")
+        Assertions.assertTrue(detectionResult.angle.roundToInt().absoluteValue > 175)
+    }
+
+    @Test
     fun testHorizontalPage() {
         testQrMarkersDetection("horizontal_page.png", "https://edustor.wtrn.ru/p/PUNOrbAi9Kdi919XEGxcCGBXnb0B")
     }
 
     @Test
-    fun testRotatedWithExtraContoursPage() {
+    fun testWithExtraContoursPage() {
         val detectionResult = testQrMarkersDetection("test_with_extra_contours.png", "https://edustor.wtrn.ru/p/PUNOrbAi9Kdi919XEGxcCGBXnb0B")
-        Assertions.assertEquals(-218, detectionResult.angle.roundToInt())
         Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size > 10)
-    }
-
-    @Test
-    fun testDigitalQrCode() {
-        val detectionResult = testQrMarkersDetection("qr.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
-    }
-
-    @Test
-    fun testQrCodeMarker() {
-        val exception = Assertions.assertThrows(QrDetectionFailedException::class.java) {
-            testQrMarkersDetection("qr_code_marker.jpeg", null)
-        }
-        Assertions.assertEquals("Cannot detect QR code: found 1 markers", exception.message)
     }
 
     fun testQrMarkersDetection(imageName: String, expectedPayload: String?): QRMarkersDetector.DetectionResult {

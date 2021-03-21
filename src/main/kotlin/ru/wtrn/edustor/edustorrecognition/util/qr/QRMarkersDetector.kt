@@ -21,12 +21,16 @@ class QRMarkersDetector() {
         val srcMat = loadedMat.srcMat
 
         val detectedMarkers = detectMarkers(loadedMat)
-        val qrMarkers: List<RotatedRect> = detectedMarkers.qrMarkers
+
+        val metaMarker = MetaMarkerDifferentiator.findMetaMarker(detectedMarkers.qrMarkers)
+        detectedMarkers.qrMarkers = detectedMarkers.qrMarkers.filter { it != metaMarker }
+        val qrMarkers = detectedMarkers.qrMarkers
+
         if (qrMarkers.size != 3) {
             throw QrDetectionFailedException("Cannot detect QR code: found ${qrMarkers.size} markers")
         }
 
-        val angle = QrRotationAngleCalculator.calculateQrCodeAngle(metaMarker = detectedMarkers.metaMarker.center, qrMarkers.map { it.center })
+        val angle = QrRotationAngleCalculator.calculateQrCodeAngle(metaMarker = metaMarker.center, qrMarkers.map { it.center })
         val qrArea = findArea(qrMarkers)
 
         val rotationMat = constructRotationMatrix(srcMat, angle)
@@ -40,7 +44,7 @@ class QRMarkersDetector() {
         val qrMat = rotatedImage.submat(rotatedQrArea)
         Imgproc.cvtColor(qrMat, qrMat, Imgproc.COLOR_RGB2GRAY)
 
-        val qrAndMetaMarkersArea = findArea(qrMarkers.plus(detectedMarkers.metaMarker))
+        val qrAndMetaMarkersArea = findArea(qrMarkers.plus(metaMarker))
         val rotatedQrAndMetaMarkersAreaMat = MatOfPoint()
         Core.transform(qrAndMetaMarkersArea.toMatOfPoint(), rotatedQrAndMetaMarkersAreaMat, rotationMat)
         val rotatedQrAndMetaMarkersArea = Imgproc.boundingRect(rotatedQrAndMetaMarkersAreaMat)
@@ -135,14 +139,11 @@ class QRMarkersDetector() {
             findExternalContour(potentialMarker, hierarchy, contours)
         }
 
-        val metaMarker = MetaMarkerDifferentiator.findMetaMarker(qrMarkers)
-
         return MarkerDetectionResult(
                 contours = contours,
                 potentialMarkers = potentialMarkers,
                 hierarchy = hierarchy,
-                qrMarkers = qrMarkers.filter { it != metaMarker },
-                metaMarker = metaMarker
+                qrMarkers = qrMarkers
         )
     }
 
@@ -193,7 +194,7 @@ class QRMarkersDetector() {
 
     private fun validateCenterDistance(internalContour: RotatedRect, externalContour: RotatedRect): PotentialMarker.RejectionReason? {
         // Check that both rectangles has same center
-        val maxCenterDistance = (internalContour.size.width * 0.01).coerceAtLeast(1.0)
+        val maxCenterDistance = (internalContour.size.width * 0.01).coerceAtLeast(3.0)
         val centerDistance = externalContour.center.dist(internalContour.center)
         if (centerDistance > maxCenterDistance) {
             return PotentialMarker.RejectionReason.INCORRECT_CENTER_DISTANCE
@@ -272,8 +273,7 @@ class QRMarkersDetector() {
     )
 
     data class MarkerDetectionResult(
-            val qrMarkers: List<RotatedRect>,
-            val metaMarker: RotatedRect,
+            var qrMarkers: List<RotatedRect>,
             val potentialMarkers: List<PotentialMarker>,
             val contours: List<MatOfPoint>,
             val hierarchy: Mat

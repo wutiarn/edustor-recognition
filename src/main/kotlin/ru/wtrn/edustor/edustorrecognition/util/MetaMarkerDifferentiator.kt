@@ -1,6 +1,7 @@
 package ru.wtrn.edustor.edustorrecognition.util
 
 import org.opencv.core.RotatedRect
+import ru.wtrn.edustor.edustorrecognition.util.qr.QrDetectionFailedException
 import ru.wtrn.edustor.edustorrecognition.util.qr.dist
 
 object MetaMarkerDifferentiator {
@@ -12,7 +13,7 @@ object MetaMarkerDifferentiator {
     fun findMetaMarker(qrMarkers: List<RotatedRect>): RotatedRect {
         return qrMarkers.asSequence()
                 .mapNotNull { marker -> tryToFindMetaMarker(marker, qrMarkers.filter { it != marker }) }
-                .first()
+                .firstOrNull() ?: throw QrDetectionFailedException("Failed to find meta marker")
     }
 
     private fun tryToFindMetaMarker(primary: RotatedRect, other: List<RotatedRect>): RotatedRect? {
