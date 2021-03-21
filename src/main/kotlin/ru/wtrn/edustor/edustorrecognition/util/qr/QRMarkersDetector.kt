@@ -92,6 +92,9 @@ class QRMarkersDetector() {
             }
 
             val internalContour = getMinAreaRect(contour)
+            if (validateMarkerForm(internalContour) != null) {
+                return@mapIndexedNotNull null
+            }
 
             val potentialMarker = PotentialMarker(
                     index = i,
@@ -117,7 +120,8 @@ class QRMarkersDetector() {
         var parentIndex = getParentIndex(internalIndex, hierarchy)!!
         while (true) {
             val candidate = getMinAreaRect(contours[parentIndex])
-            val rejectionReason = validateMarkerFormAndCenterDistance(internalContour, candidate)
+            val rejectionReason = validateMarkerForm(candidate)
+                    ?: validateCenterDistance(internalContour, candidate)
             if (rejectionReason != null) {
                 if (externalContour == null) {
                     // Set rejectionReason only if we didn't find any external contours
@@ -152,12 +156,7 @@ class QRMarkersDetector() {
         return Imgproc.minAreaRect(point2f)
     }
 
-    private fun validateMarkerFormAndCenterDistance(internalContour: RotatedRect, externalContour: RotatedRect): PotentialMarker.RejectionReason? {
-        // Check that both rectangles has square form
-        if (!checkHasSquareForm(internalContour) || !checkHasSquareForm(externalContour)) {
-            return PotentialMarker.RejectionReason.NON_SQUARE_FORM
-        }
-
+    private fun validateCenterDistance(internalContour: RotatedRect, externalContour: RotatedRect): PotentialMarker.RejectionReason? {
         // Check that both rectangles has same center
         val maxCenterDistance = (internalContour.size.width * 0.01).coerceAtLeast(1.0)
         val centerDistance = externalContour.center.dist(internalContour.center)
@@ -171,7 +170,7 @@ class QRMarkersDetector() {
     private fun validateMarkerAreaRatio(internalContour: RotatedRect, externalContour: RotatedRect): PotentialMarker.RejectionReason? {
         val areaRatio = internalContour.size.area() / externalContour.size.area()
         val perfectRatio = 0.1836
-        val maxRatioDelta = 0.05
+        val maxRatioDelta = 0.03
         val ratioDelta = abs(areaRatio - perfectRatio)
         if (ratioDelta > maxRatioDelta) {
             return PotentialMarker.RejectionReason.INCORRECT_AREA_RATIO
@@ -182,11 +181,14 @@ class QRMarkersDetector() {
     /**
      * Check that marker has square form
      */
-    private fun checkHasSquareForm(contour: RotatedRect): Boolean {
+    private fun validateMarkerForm(contour: RotatedRect): PotentialMarker.RejectionReason? {
         // Allow up to 10% width/height difference (or up to 3 pixels if 10% is smaller).
         val maxPixelDelta = (contour.size.width * 0.1).coerceAtLeast(3.0)
         val actualPixelDelta = Math.abs(contour.size.width - contour.size.height)
-        return actualPixelDelta <= maxPixelDelta
+        if (actualPixelDelta > maxPixelDelta) {
+            return PotentialMarker.RejectionReason.NON_SQUARE_FORM
+        }
+        return null
     }
 
     private fun checkHasNoChildContour(contourIndex: Int, hierarchy: Mat): Boolean {

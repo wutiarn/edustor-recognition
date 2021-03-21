@@ -42,13 +42,19 @@ internal class QRMarkersDetectorTest {
     fun testRotatedWithExtraContoursPage() {
         val detectionResult = testQrMarkersDetection("rotated_with_extra_contours.jpeg", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
         Assertions.assertEquals(-218, detectionResult.angle.roundToInt())
-        Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size > 3)
+        Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size > 10)
     }
+
     @Test
     fun testSkewedAndRotated() {
         val detectionResult = testQrMarkersDetection("skewed_and_rotated.png", "https://edustor.wtrn.ru/p/RwHT26QYC0Macch730Fv82BSaVUJ")
         Assertions.assertEquals(-179, detectionResult.angle.roundToInt())
-        Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size > 3)
+        Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size == 4)
+    }
+
+    @Test
+    fun testDigitalQrCode() {
+        val detectionResult = testQrMarkersDetection("qr.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
     }
 
     @Test
@@ -92,17 +98,16 @@ internal class QRMarkersDetectorTest {
     }
 
     private fun drawPotentialMarkers(mat: Mat, list: List<QRMarkersDetector.PotentialMarker>, outDirectory: File) {
-        val innerContours = list.map { it.contour.toMatOfPoint() }
-        val parentContours = list.mapNotNull { it.parentContour?.toMatOfPoint() }
-
         val innerColor = Scalar(0.0, 255.0, 255.0)
-        val parentColor = Scalar(0.0, 255.0, 0.0)
-
-        innerContours.forEachIndexed { i, _ ->
-            Imgproc.drawContours(mat, innerContours, i, innerColor, 1)
-        }
-        parentContours.forEachIndexed { i, _ ->
-            Imgproc.drawContours(mat, parentContours, i, parentColor, 1)
+        list.forEach { marker ->
+            val parentColor = when {
+                marker.rejectionReason == null ->  Scalar(0.0, 255.0, 0.0)
+                else -> Scalar(0.0, 0.0, 255.0)
+            }
+            Imgproc.drawContours(mat, listOf(marker.contour.toMatOfPoint()), 0, innerColor, 1)
+            marker.parentContour?.let {
+                    Imgproc.drawContours(mat, listOf(it.toMatOfPoint()), 0, parentColor, 1)
+            }
         }
 
         File(outDirectory, "03_potential_markers.png").writeBytes(mat.toPng())
