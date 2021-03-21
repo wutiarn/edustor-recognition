@@ -16,27 +16,34 @@ class QRMarkersDetector() {
         }
     }
 
-    fun findQrArea(image: BufferedImage): QrArea {
+    fun detect(image: BufferedImage): DetectionResult {
         val loadedMat = loadMat(image)
-        val foundContours = findMarkers(loadedMat)
-        val qrMarkers: List<RotatedRect> = foundContours.qrMarkers
+        val detectedMarkers = detectMarkers(loadedMat)
+        val qrMarkers: List<RotatedRect> = detectedMarkers.qrMarkers
         if (qrMarkers.size != 3) {
             throw IllegalArgumentException("Cannot detect QR code: found ${qrMarkers.size} markers")
         }
+
+        val angle = calculateQrCodeAngle(qrMarkers)
+        val qrArea = findQrArea(qrMarkers)
+        val qrMat = loadedMat.srcMat.submat(qrArea.boundingRect())
+        Imgproc.cvtColor(qrMat, qrMat, Imgproc.COLOR_RGB2GRAY)
+
+        return DetectionResult(
+                qrArea = qrArea,
+                qrMat = qrMat,
+                angle = angle, // TODO: Calculate actual qr code rotation
+                detectedMarkers = detectedMarkers,
+                imageMat = loadedMat
+        )
+    }
+
+    private fun findQrArea(qrMarkers: List<RotatedRect>): RotatedRect {
         val concatMat = MatOfPoint()
         Core.vconcat(qrMarkers.map { it.toMatOfPoint() }, concatMat)
         val mat2f = MatOfPoint2f()
         concatMat.convertTo(mat2f, CvType.CV_32FC2)
-        val rect = Imgproc.minAreaRect(mat2f)
-
-        val qrMat = loadedMat.srcMat.submat(rect.boundingRect())
-        Imgproc.cvtColor(qrMat, qrMat, Imgproc.COLOR_RGB2GRAY)
-
-        return QrArea(
-                rect = rect,
-                qrMat = qrMat,
-                angle = 0.0 // TODO: Calculate actual qr code rotation
-        )
+        return Imgproc.minAreaRect(mat2f)
     }
 
     internal fun loadMat(image: BufferedImage): LoadedImageMat {
@@ -66,7 +73,7 @@ class QRMarkersDetector() {
         )
     }
 
-    internal fun findMarkers(loadedMat: LoadedImageMat): MarkerFindResult {
+    internal fun detectMarkers(loadedMat: LoadedImageMat): MarkerFindResult {
         val mat = loadedMat.mat
         val contours = ArrayList<MatOfPoint>()
         val hierarchy = Mat()
@@ -95,6 +102,10 @@ class QRMarkersDetector() {
                 hierarchy = hierarchy,
                 qrMarkers = qrMarkers
         )
+    }
+
+    private fun calculateQrCodeAngle(qrMarkers: List<RotatedRect>): Double {
+        return 0.0
     }
 
     private fun getMinAreaRect(mop: MatOfPoint): RotatedRect {
@@ -168,6 +179,14 @@ class QRMarkersDetector() {
         }
     }
 
+    data class DetectionResult(
+            val qrArea: RotatedRect,
+            val qrMat: Mat,
+            val angle: Double,
+            val detectedMarkers: MarkerFindResult,
+            val imageMat: LoadedImageMat
+    )
+
     data class LoadedImageMat(
             val mat: Mat,
             val srcMat: Mat
@@ -177,11 +196,5 @@ class QRMarkersDetector() {
             val qrMarkers: List<RotatedRect>,
             val contours: List<MatOfPoint>,
             val hierarchy: Mat
-    )
-
-    data class QrArea(
-            val rect: RotatedRect,
-            val qrMat: Mat,
-            val angle: Double
     )
 }

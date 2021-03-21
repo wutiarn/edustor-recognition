@@ -26,7 +26,7 @@ internal class QRMarkersDetectorTest {
         File(outDirectory, "01_raw.png").writeBytes(srcMat.toPng())
         File(outDirectory, "02_preprocessed.png").writeBytes(mat.toPng())
 
-        val qrMarkers = detector.findMarkers(loadedImageMat).qrMarkers
+        val qrMarkers = detector.detectMarkers(loadedImageMat).qrMarkers
 
         val color = Scalar(0.0, 255.0, 0.0)
         val markerListOfPoints = qrMarkers.map { it.toMatOfPoint() }
@@ -35,12 +35,13 @@ internal class QRMarkersDetectorTest {
         }
         File(outDirectory, "03_markers.png").writeBytes(srcMat.toPng())
 
-        val qrArea = detector.findQrArea(image)
-        Imgproc.drawContours(srcMat, listOf(qrArea.rect.toMatOfPoint()), 0, color, 1)
+        val detectionResult = detector.detect(image)
+        Imgproc.drawContours(srcMat, listOf(detectionResult.qrArea.toMatOfPoint()), 0, color, 1)
         File(outDirectory, "04_qr_area.png").writeBytes(srcMat.toPng())
+        File(outDirectory, "05_qr.png").writeBytes(detectionResult.qrMat.toPng())
 
         val zxingReader = QRCodeReader()
-        val luminanceSource = BufferedImageLuminanceSource(qrArea.qrMat.toBufferedImage())
+        val luminanceSource = BufferedImageLuminanceSource(detectionResult.qrMat.toBufferedImage())
         val binarizer = HybridBinarizer(luminanceSource)
         val binaryBitmap = BinaryBitmap(binarizer)
         val result = zxingReader.decode(binaryBitmap)
