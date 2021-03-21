@@ -29,8 +29,9 @@ internal class QRMarkersDetectorTest {
         val qrMarkers = detector.findMarkers(loadedImageMat).qrMarkers
 
         val color = Scalar(0.0, 255.0, 0.0)
-        qrMarkers.forEachIndexed { i, contour ->
-            Imgproc.drawContours(srcMat, qrMarkers, i, color, 1)
+        val markerListOfPoints = qrMarkers.map { it.toMatOfPoint() }
+        markerListOfPoints.forEachIndexed { i, _ ->
+            Imgproc.drawContours(srcMat, markerListOfPoints, i, color, 1)
         }
         File(outDirectory, "03_markers.png").writeBytes(srcMat.toPng())
 

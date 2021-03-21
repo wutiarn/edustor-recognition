@@ -16,12 +16,12 @@ class QRMarkersDetector() {
     fun findQrArea(image: BufferedImage): QrArea {
         val loadedMat = loadMat(image)
         val foundContours = findMarkers(loadedMat)
-        val qrMarkers: List<MatOfPoint> = foundContours.qrMarkers
+        val qrMarkers: List<RotatedRect> = foundContours.qrMarkers
         if (qrMarkers.size != 3) {
             throw IllegalArgumentException("Cannot detect QR code: found ${qrMarkers.size} markers")
         }
         val concatMat = MatOfPoint()
-        Core.vconcat(qrMarkers, concatMat)
+        Core.vconcat(qrMarkers.map { it.toMatOfPoint() }, concatMat)
         val mat2f = MatOfPoint2f()
         concatMat.convertTo(mat2f, CvType.CV_32FC2)
         val rect = Imgproc.minAreaRect(mat2f)
@@ -72,28 +72,36 @@ class QRMarkersDetector() {
 
         val parentsCache = HashMap<Int, Int>()
 
-        val qrMarkers = contours
-                .mapIndexedNotNull { i, _ ->
-                    val parentsCount = calculateParentsCount(contourIndex = i, hierarchy = hierarchy, parentsCache = parentsCache)
-                    if (parentsCount < 5) {
-                        return@mapIndexedNotNull null
-                    }
-                    val rootIndex = (0 until parentsCount)
-                            .fold(i) { childIndex, _ -> getParentIndex(childIndex, hierarchy)!! }
-                    contours[rootIndex]
-                }
-                .map {
-                    val point2f = MatOfPoint2f()
-                    it.convertTo(point2f, CvType.CV_32FC2)
-                    val rect = Imgproc.minAreaRect(point2f)
-                    rect.toMatOfPoint()
-                }
+        val qrMarkers = contours.mapIndexedNotNull { i, contour ->
+            val parentsCount = calculateParentsCount(contourIndex = i, hierarchy = hierarchy, parentsCache = parentsCache)
+            if (parentsCount < 5) {
+                return@mapIndexedNotNull null
+            }
+            val externalContourIndex = (0 until parentsCount)
+                    .fold(i) { childIndex, _ -> getParentIndex(childIndex, hierarchy)!! }
+            val externalContour = getMinAreaRect(contours[externalContourIndex])
+            val internalContour = getMinAreaRect(contour)
+            when {
+                validateQrMarker(internalContour, externalContour) -> externalContour
+                else -> null
+            }
+        }
 
         return MarkerFindResult(
                 contours = contours,
                 hierarchy = hierarchy,
                 qrMarkers = qrMarkers
         )
+    }
+
+    private fun getMinAreaRect(mop: MatOfPoint): RotatedRect {
+        val point2f = MatOfPoint2f()
+        mop.convertTo(point2f, CvType.CV_32FC2)
+        return Imgproc.minAreaRect(point2f)
+    }
+
+    private fun validateQrMarker(internalContour: RotatedRect, externalContour: RotatedRect): Boolean {
+        return true // TODO: Implement marker valiation
     }
 
     internal fun calculateParentsCount(contourIndex: Int, hierarchy: Mat, parentsCache: HashMap<Int, Int>): Int {
@@ -128,7 +136,7 @@ class QRMarkersDetector() {
     )
 
     data class MarkerFindResult(
-            val qrMarkers: List<MatOfPoint>,
+            val qrMarkers: List<RotatedRect>,
             val contours: List<MatOfPoint>,
             val hierarchy: Mat
     )
