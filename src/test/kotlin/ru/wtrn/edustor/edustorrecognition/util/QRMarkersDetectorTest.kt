@@ -5,6 +5,7 @@ import com.google.zxing.Result
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.opencv.core.Mat
 import org.opencv.core.RotatedRect
@@ -21,10 +22,15 @@ internal class QRMarkersDetectorTest {
 
     @Test
     fun testNormalPage() {
-        testQrMarkersDetection("test_page.png")
+        testQrMarkersDetection("test_page.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
     }
 
-    fun testQrMarkersDetection(imageName: String) {
+    @Test
+    fun testRotatedWithExtraContoursPage() {
+        testQrMarkersDetection("test_page2.jpeg", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
+    }
+
+    fun testQrMarkersDetection(imageName: String, expectedPayload: String) {
         val detector = QRMarkersDetector()
         val image = javaClass.getResource("/$imageName").readBytes().toBufferedImage()
         val outDirectory = File(baseOutDirectory, imageName.split(".").first()).also {
@@ -49,6 +55,7 @@ internal class QRMarkersDetectorTest {
         File(outDirectory, "05_qr.png").writeBytes(detectionResult.qrMat.toPng())
 
         val qrPayload = readBarcode(detectionResult.qrMat.toBufferedImage())
+        Assertions.assertEquals(expectedPayload, qrPayload)
     }
 
     private fun drawPotentialMarkers(mat: Mat, list: List<QRMarkersDetector.PotentialMarker>, outDirectory: File) {
