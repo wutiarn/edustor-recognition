@@ -2,6 +2,8 @@ package ru.wtrn.edustor.edustorrecognition.util
 
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
+import ru.wtrn.edustor.edustorrecognition.util.qr.QrRotationAngleCalculator
+import ru.wtrn.edustor.edustorrecognition.util.qr.dist
 import java.awt.image.BufferedImage
 import java.lang.IllegalArgumentException
 import kotlin.math.abs
@@ -24,7 +26,7 @@ class QRMarkersDetector() {
             throw IllegalArgumentException("Cannot detect QR code: found ${qrMarkers.size} markers")
         }
 
-        val angle = calculateQrCodeAngle(qrMarkers.map { it.center })
+        val angle = QrRotationAngleCalculator.calculateQrCodeAngle(qrMarkers.map { it.center })
         val qrArea = findQrArea(qrMarkers)
         val qrMat = loadedMat.srcMat.submat(qrArea.boundingRect())
         Imgproc.cvtColor(qrMat, qrMat, Imgproc.COLOR_RGB2GRAY)
@@ -104,10 +106,6 @@ class QRMarkersDetector() {
         )
     }
 
-    private fun calculateQrCodeAngle(qrMarkersLocation: List<Point>): Double {
-        return 0.0
-    }
-
     private fun getMinAreaRect(mop: MatOfPoint): RotatedRect {
         val point2f = MatOfPoint2f()
         mop.convertTo(point2f, CvType.CV_32FC2)
@@ -122,7 +120,7 @@ class QRMarkersDetector() {
 
         // Check that both rectangles has same center
         val maxCenterDistance = (internalContour.size.width * 0.01).coerceAtLeast(1.0)
-        val centerDistance = calculateDistance(externalContour.center, internalContour.center)
+        val centerDistance = externalContour.center.dist(internalContour.center)
         if (centerDistance > maxCenterDistance) {
             return false
         }
@@ -137,10 +135,6 @@ class QRMarkersDetector() {
         }
 
         return true // TODO: Implement marker validation
-    }
-
-    private fun calculateDistance(p1: Point, p2: Point): Double {
-        return sqrt((p1.x - p2.x).pow(2) + (p1.y - p2.y).pow(2))
     }
 
     /**
