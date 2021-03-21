@@ -14,7 +14,8 @@ class QRMarkersDetector(private val image: BufferedImage) {
     }
 
     fun findQrArea(): QrArea {
-        val qrMarkers: List<MatOfPoint> = findContours().qrMarkers
+        val foundContours = findContours()
+        val qrMarkers: List<MatOfPoint> = foundContours.qrMarkers
         if (qrMarkers.size != 3) {
             throw IllegalArgumentException("Cannot detect QR code: found ${qrMarkers.size} markers")
         }
@@ -24,8 +25,12 @@ class QRMarkersDetector(private val image: BufferedImage) {
         concatMat.convertTo(mat2f, CvType.CV_32FC2)
         val rect = Imgproc.minAreaRect(mat2f)
 
+        val qrMat = foundContours.loadedMat.srcMat.submat(rect.boundingRect())
+        Imgproc.cvtColor(qrMat, qrMat, Imgproc.COLOR_RGB2GRAY)
+
         return QrArea(
-                points = rect.toPointsArray(),
+                rect = rect,
+                qrMat = qrMat,
                 angle = 0.0 // TODO: Calculate actual qr code rotation
         )
     }
@@ -58,7 +63,8 @@ class QRMarkersDetector(private val image: BufferedImage) {
     }
 
     internal fun findContours(): FoundContours {
-        val mat = loadMat().mat
+        val loadedMat = loadMat()
+        val mat = loadedMat.mat
         val contours = ArrayList<MatOfPoint>()
         val hierarchy = Mat()
 
@@ -84,6 +90,7 @@ class QRMarkersDetector(private val image: BufferedImage) {
                 }
 
         return FoundContours(
+                loadedMat = loadedMat,
                 qrMarkers = qrMarkers,
                 contours = contours,
                 hierarchy = hierarchy
@@ -122,13 +129,15 @@ class QRMarkersDetector(private val image: BufferedImage) {
     )
 
     data class FoundContours(
+            val loadedMat: LoadedImageMat,
             val qrMarkers: List<MatOfPoint>,
             val contours: List<MatOfPoint>,
             val hierarchy: Mat
     )
 
     data class QrArea(
-            val points: Array<Point>,
+            val rect: RotatedRect,
+            val qrMat: Mat,
             val angle: Double
     )
 }
