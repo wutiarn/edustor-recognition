@@ -5,6 +5,7 @@ import com.google.zxing.client.j2se.BufferedImageLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
 import org.junit.jupiter.api.Test
+import org.opencv.core.Mat
 import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
 import java.io.File
@@ -26,7 +27,11 @@ internal class QRMarkersDetectorTest {
         File(outDirectory, "01_raw.png").writeBytes(srcMat.toPng())
         File(outDirectory, "02_preprocessed.png").writeBytes(mat.toPng())
 
-        val qrMarkers = detector.detectMarkers(loadedImageMat).qrMarkers
+        val markerDetectionResult = detector.detectMarkers(loadedImageMat)
+
+        drawPotentialMarkers(srcMat.clone(), markerDetectionResult.potentialMarkers)
+
+        val qrMarkers = markerDetectionResult.qrMarkers
 
         val color = Scalar(0.0, 255.0, 0.0)
         val markerListOfPoints = qrMarkers.map { it.toMatOfPoint() }
@@ -45,5 +50,22 @@ internal class QRMarkersDetectorTest {
         val binarizer = HybridBinarizer(luminanceSource)
         val binaryBitmap = BinaryBitmap(binarizer)
         val result = zxingReader.decode(binaryBitmap)
+    }
+
+    private fun drawPotentialMarkers(mat: Mat, list: List<QRMarkersDetector.PotentialMarker>) {
+        val innerContours = list.map { it.contour.toMatOfPoint() }
+        val parentContours = list.flatMap { it.parents }.map { it.contour.toMatOfPoint() }
+
+        val innerColor = Scalar(0.0, 0.0, 255.0)
+        val parentColor = Scalar(0.0, 255.0, 0.0)
+
+        innerContours.forEachIndexed { i, _ ->
+            Imgproc.drawContours(mat, innerContours, i, innerColor, 1)
+        }
+        parentContours.forEachIndexed { i, _ ->
+            Imgproc.drawContours(mat, parentContours, i, parentColor, 1)
+        }
+
+        File(outDirectory, "03_potential_markers.png").writeBytes(mat.toPng())
     }
 }

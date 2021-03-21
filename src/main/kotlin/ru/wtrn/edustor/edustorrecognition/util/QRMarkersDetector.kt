@@ -7,8 +7,6 @@ import ru.wtrn.edustor.edustorrecognition.util.qr.dist
 import java.awt.image.BufferedImage
 import java.lang.IllegalArgumentException
 import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 class QRMarkersDetector() {
 
@@ -75,12 +73,13 @@ class QRMarkersDetector() {
         )
     }
 
-    internal fun detectMarkers(loadedMat: LoadedImageMat): MarkerFindResult {
+    internal fun detectMarkers(loadedMat: LoadedImageMat): MarkerDetectionResult {
         val mat = loadedMat.mat
         val contours = ArrayList<MatOfPoint>()
         val hierarchy = Mat()
 
         Imgproc.findContours(mat, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+        val potentialMarkers = ArrayList<PotentialMarker>()
 
         val parentsCache = HashMap<Int, Int>()
 
@@ -89,18 +88,35 @@ class QRMarkersDetector() {
             if (parentsCount < 5) {
                 return@mapIndexedNotNull null
             }
-            val externalContourIndex = (0 until parentsCount)
-                    .fold(i) { childIndex, _ -> getParentIndex(childIndex, hierarchy)!! }
-            val externalContour = getMinAreaRect(contours[externalContourIndex])
+
             val internalContour = getMinAreaRect(contour)
+
+            val potentialMarker = PotentialMarker(
+                    index = i,
+                    contour = internalContour)
+            potentialMarkers.add(potentialMarker)
+
+            val externalContourIndex = (0 until parentsCount)
+                    .fold(i) { childIndex, _ ->
+                        val parentIndex = getParentIndex(childIndex, hierarchy)!!
+                        potentialMarker.parents.add(
+                                PotentialMarker(
+                                        index = parentIndex,
+                                        contour = getMinAreaRect(contours[parentIndex])
+                                )
+                        )
+                        parentIndex
+                    }
+            val externalContour = getMinAreaRect(contours[externalContourIndex])
             when {
                 checkHasSquareForm(internalContour, externalContour) -> externalContour
                 else -> null
             }
         }
 
-        return MarkerFindResult(
+        return MarkerDetectionResult(
                 contours = contours,
+                potentialMarkers = potentialMarkers,
                 hierarchy = hierarchy,
                 qrMarkers = qrMarkers
         )
@@ -177,7 +193,7 @@ class QRMarkersDetector() {
             val qrArea: RotatedRect,
             val qrMat: Mat,
             val angle: Double,
-            val detectedMarkers: MarkerFindResult,
+            val detectedMarkers: MarkerDetectionResult,
             val imageMat: LoadedImageMat
     )
 
@@ -186,9 +202,16 @@ class QRMarkersDetector() {
             val srcMat: Mat
     )
 
-    data class MarkerFindResult(
+    data class MarkerDetectionResult(
             val qrMarkers: List<RotatedRect>,
+            val potentialMarkers: List<PotentialMarker>,
             val contours: List<MatOfPoint>,
             val hierarchy: Mat
+    )
+
+    data class PotentialMarker(
+            val index: Int,
+            val contour: RotatedRect,
+            val parents: MutableList<PotentialMarker> = mutableListOf()
     )
 }
