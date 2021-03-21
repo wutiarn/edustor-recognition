@@ -110,7 +110,7 @@ class QRMarkersDetector() {
                     }
             val externalContour = getMinAreaRect(contours[externalContourIndex])
             when {
-                checkHasSquareForm(internalContour, externalContour) -> externalContour
+                validateMarker(internalContour, externalContour) -> externalContour
                 else -> null
             }
         }
@@ -129,7 +129,7 @@ class QRMarkersDetector() {
         return Imgproc.minAreaRect(point2f)
     }
 
-    private fun checkHasSquareForm(internalContour: RotatedRect, externalContour: RotatedRect): Boolean {
+    private fun validateMarker(internalContour: RotatedRect, externalContour: RotatedRect): Boolean {
         // Check that both rectangles has square form
         if (!checkHasSquareForm(internalContour) || !checkHasSquareForm(externalContour)) {
             return false
@@ -158,10 +158,10 @@ class QRMarkersDetector() {
      * Check that marker has square form
      */
     private fun checkHasSquareForm(contour: RotatedRect): Boolean {
-        // Allow up to 10% width/height difference (or up to 2 pixels if 10% is smaller).
-        val maxPixelDelta = (contour.size.width * 0.1).coerceAtLeast(2.0)
+        // Allow up to 10% width/height difference (or up to 3 pixels if 10% is smaller).
+        val maxPixelDelta = (contour.size.width * 0.1).coerceAtLeast(3.0)
         val actualPixelDelta = Math.abs(contour.size.width - contour.size.height)
-        return actualPixelDelta < maxPixelDelta
+        return actualPixelDelta <= maxPixelDelta
     }
 
     internal fun calculateParentsCount(contourIndex: Int, hierarchy: Mat, parentsCache: HashMap<Int, Int>): Int {
