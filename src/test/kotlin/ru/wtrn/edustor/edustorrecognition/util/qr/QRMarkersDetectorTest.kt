@@ -1,7 +1,6 @@
-package ru.wtrn.edustor.edustorrecognition.util
+package ru.wtrn.edustor.edustorrecognition.util.qr
 
 import com.google.zxing.BinaryBitmap
-import com.google.zxing.Result
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
@@ -11,7 +10,11 @@ import org.opencv.core.Mat
 import org.opencv.core.RotatedRect
 import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
+import ru.wtrn.edustor.edustorrecognition.util.qr.QRMarkersDetector
 import ru.wtrn.edustor.edustorrecognition.util.qr.QrDetectionFailedException
+import ru.wtrn.edustor.edustorrecognition.util.toBufferedImage
+import ru.wtrn.edustor.edustorrecognition.util.toMatOfPoint
+import ru.wtrn.edustor.edustorrecognition.util.toPng
 import java.awt.image.BufferedImage
 import java.io.File
 import kotlin.math.roundToInt

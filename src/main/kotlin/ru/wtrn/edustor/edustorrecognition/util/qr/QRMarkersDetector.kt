@@ -1,12 +1,10 @@
-package ru.wtrn.edustor.edustorrecognition.util
+package ru.wtrn.edustor.edustorrecognition.util.qr
 
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
-import ru.wtrn.edustor.edustorrecognition.util.qr.QrDetectionFailedException
-import ru.wtrn.edustor.edustorrecognition.util.qr.QrRotationAngleCalculator
-import ru.wtrn.edustor.edustorrecognition.util.qr.dist
+import ru.wtrn.edustor.edustorrecognition.util.toMat
+import ru.wtrn.edustor.edustorrecognition.util.toMatOfPoint
 import java.awt.image.BufferedImage
-import java.lang.IllegalArgumentException
 import kotlin.math.abs
 
 class QRMarkersDetector() {

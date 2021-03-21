@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import ru.wtrn.edustor.edustorrecognition.util.PdfRenderer
-import ru.wtrn.edustor.edustorrecognition.util.QRMarkersDetector
+import ru.wtrn.edustor.edustorrecognition.util.qr.QRMarkersDetector
 
 @RestController
 @RequestMapping("/recognize")
