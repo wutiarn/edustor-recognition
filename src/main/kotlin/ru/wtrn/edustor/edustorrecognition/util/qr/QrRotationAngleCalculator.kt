@@ -43,7 +43,7 @@ object QrRotationAngleCalculator {
          * Note, that OpenCV axis starts at top left corner, so Y axis is inverted
          */
         if (metaMarker.y > rightQrMarker.y) {
-            rotationDegrees -= 180
+            rotationDegrees += -1 * rotationDegrees.sign * 180
         }
 
         return rotationDegrees
