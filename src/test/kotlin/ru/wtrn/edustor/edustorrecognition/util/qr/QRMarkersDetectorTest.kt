@@ -72,11 +72,12 @@ internal class QRMarkersDetectorTest {
         File(outDirectory, "07_rotated_image.png").writeBytes(detectionResult.rotatedImageMat.toPng())
 
         expectedPayload?.let {
-            val qrPayload = readBarcode(detectionResult.qrMat.toBufferedImage())
+            val qrCodeReader = QrCodeReader()
+            val qrPayload = qrCodeReader.readBarcode(detectionResult.qrMat.toBufferedImage())
             Assertions.assertEquals(expectedPayload, qrPayload)
         }
 
-        val metaFieldsArea = MetaFieldsExtractor.getArea(detectionResult.rotatedImageMat, detectionResult.rotatedQrAndMetaMarkersArea)
+        val metaFieldsArea = MetaFieldsExtractor.getArea(detectionResult.rotatedQrAndMetaMarkersArea)
         drawMetaFieldsArea(detectionResult.rotatedImageMat.clone(), metaFieldsArea, outDirectory)
         return detectionResult
     }
@@ -117,13 +118,5 @@ internal class QRMarkersDetectorTest {
 
         Imgproc.rectangle(mat, metaFieldsArea, color, 1)
         File(outDirectory, "08_meta_fields.png").writeBytes(mat.toPng())
-    }
-
-    private fun readBarcode(image: BufferedImage): String {
-        val zxingReader = QRCodeReader()
-        val luminanceSource = BufferedImageLuminanceSource(image)
-        val binarizer = HybridBinarizer(luminanceSource)
-        val binaryBitmap = BinaryBitmap(binarizer)
-        return zxingReader.decode(binaryBitmap).text
     }
 }
