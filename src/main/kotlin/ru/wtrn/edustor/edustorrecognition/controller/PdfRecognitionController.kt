@@ -14,7 +14,7 @@ class PdfRecognitionController {
         val renderer = PdfRenderer(file.inputStream())
         val image = renderer.next()
 
-        val detector = QRMarkersDetector(image)
-        val qrArea = detector.findQrArea()
+        val detector = QRMarkersDetector()
+        val qrArea = detector.findQrArea(image)
     }
 }

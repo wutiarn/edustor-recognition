@@ -5,12 +5,8 @@ import com.google.zxing.client.j2se.BufferedImageLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
 import org.junit.jupiter.api.Test
-import org.opencv.core.Core
-import org.opencv.core.Mat
-import org.opencv.core.MatOfPoint
 import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
-import org.opencv.objdetect.QRCodeDetector
 import java.io.File
 
 internal class QRMarkersDetectorTest {
@@ -21,14 +17,16 @@ internal class QRMarkersDetectorTest {
 
     @Test
     fun testQrMarkersDetection() {
+        val detector = QRMarkersDetector()
         val image = javaClass.getResource("/test_page.png").readBytes().toBufferedImage()
-        val detector = QRMarkersDetector(image)
 
-        val (mat, srcMat) = detector.loadMat()
+        val loadedImageMat = detector.loadMat(image)
+        val srcMat = loadedImageMat.srcMat.clone()
+        val mat = loadedImageMat.mat.clone()
         File(outDirectory, "01_raw.png").writeBytes(srcMat.toPng())
         File(outDirectory, "02_preprocessed.png").writeBytes(mat.toPng())
 
-        val qrMarkers = detector.findContours().qrMarkers
+        val qrMarkers = detector.findMarkers(loadedImageMat).qrMarkers
 
         val color = Scalar(0.0, 255.0, 0.0)
         qrMarkers.forEachIndexed { i, contour ->
@@ -36,7 +34,7 @@ internal class QRMarkersDetectorTest {
         }
         File(outDirectory, "03_markers.png").writeBytes(srcMat.toPng())
 
-        val qrArea = detector.findQrArea()
+        val qrArea = detector.findQrArea(image)
         Imgproc.drawContours(srcMat, listOf(qrArea.rect.toMatOfPoint()), 0, color, 1)
         File(outDirectory, "04_qr_area.png").writeBytes(srcMat.toPng())
 

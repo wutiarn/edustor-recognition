@@ -5,7 +5,7 @@ import org.opencv.imgproc.Imgproc
 import java.awt.image.BufferedImage
 import java.lang.IllegalArgumentException
 
-class QRMarkersDetector(private val image: BufferedImage) {
+class QRMarkersDetector() {
 
     companion object {
         init {
@@ -13,8 +13,9 @@ class QRMarkersDetector(private val image: BufferedImage) {
         }
     }
 
-    fun findQrArea(): QrArea {
-        val foundContours = findContours()
+    fun findQrArea(image: BufferedImage): QrArea {
+        val loadedMat = loadMat(image)
+        val foundContours = findMarkers(loadedMat)
         val qrMarkers: List<MatOfPoint> = foundContours.qrMarkers
         if (qrMarkers.size != 3) {
             throw IllegalArgumentException("Cannot detect QR code: found ${qrMarkers.size} markers")
@@ -25,7 +26,7 @@ class QRMarkersDetector(private val image: BufferedImage) {
         concatMat.convertTo(mat2f, CvType.CV_32FC2)
         val rect = Imgproc.minAreaRect(mat2f)
 
-        val qrMat = foundContours.loadedMat.srcMat.submat(rect.boundingRect())
+        val qrMat = loadedMat.srcMat.submat(rect.boundingRect())
         Imgproc.cvtColor(qrMat, qrMat, Imgproc.COLOR_RGB2GRAY)
 
         return QrArea(
@@ -35,7 +36,7 @@ class QRMarkersDetector(private val image: BufferedImage) {
         )
     }
 
-    internal fun loadMat(): LoadedImageMat {
+    internal fun loadMat(image: BufferedImage): LoadedImageMat {
         val srcMat = image.toMat()
         val mat = Mat()
         Imgproc.cvtColor(srcMat, srcMat, Imgproc.COLOR_RGBA2RGB)
@@ -62,8 +63,7 @@ class QRMarkersDetector(private val image: BufferedImage) {
         )
     }
 
-    internal fun findContours(): FoundContours {
-        val loadedMat = loadMat()
+    internal fun findMarkers(loadedMat: LoadedImageMat): MarkerFindResult {
         val mat = loadedMat.mat
         val contours = ArrayList<MatOfPoint>()
         val hierarchy = Mat()
@@ -89,11 +89,10 @@ class QRMarkersDetector(private val image: BufferedImage) {
                     rect.toMatOfPoint()
                 }
 
-        return FoundContours(
-                loadedMat = loadedMat,
-                qrMarkers = qrMarkers,
+        return MarkerFindResult(
                 contours = contours,
-                hierarchy = hierarchy
+                hierarchy = hierarchy,
+                qrMarkers = qrMarkers
         )
     }
 
@@ -128,8 +127,7 @@ class QRMarkersDetector(private val image: BufferedImage) {
             val srcMat: Mat
     )
 
-    data class FoundContours(
-            val loadedMat: LoadedImageMat,
+    data class MarkerFindResult(
             val qrMarkers: List<MatOfPoint>,
             val contours: List<MatOfPoint>,
             val hierarchy: Mat
