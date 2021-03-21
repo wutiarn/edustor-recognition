@@ -65,6 +65,12 @@ class QRMarkersDetector() {
 
     internal fun loadMat(image: BufferedImage): LoadedImageMat {
         val srcMat = image.toMat()
+
+        val srcSize = srcMat.size()
+        if (srcSize.width > srcSize.height) {
+            Core.rotate(srcMat, srcMat, Core.ROTATE_90_CLOCKWISE)
+        }
+
         val mat = Mat()
         Imgproc.cvtColor(srcMat, srcMat, Imgproc.COLOR_RGBA2RGB)
         Imgproc.cvtColor(srcMat, mat, Imgproc.COLOR_RGB2GRAY)

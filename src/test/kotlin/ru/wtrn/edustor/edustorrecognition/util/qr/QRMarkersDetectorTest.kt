@@ -33,9 +33,8 @@ internal class QRMarkersDetectorTest {
     }
 
     @Test
-    fun testRotatedPage() {
-        val detectionResult = testQrMarkersDetection("rotated_page.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
-        Assertions.assertEquals(-90, detectionResult.angle.roundToInt())
+    fun testHorizontalPage() {
+        testQrMarkersDetection("horizontal_page.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
     }
 
     @Test
