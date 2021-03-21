@@ -2,6 +2,7 @@ package ru.wtrn.edustor.edustorrecognition.util
 
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
+import ru.wtrn.edustor.edustorrecognition.util.qr.QrDetectionFailedException
 import ru.wtrn.edustor.edustorrecognition.util.qr.QrRotationAngleCalculator
 import ru.wtrn.edustor.edustorrecognition.util.qr.dist
 import java.awt.image.BufferedImage
@@ -21,7 +22,7 @@ class QRMarkersDetector() {
         val detectedMarkers = detectMarkers(loadedMat)
         val qrMarkers: List<RotatedRect> = detectedMarkers.qrMarkers
         if (qrMarkers.size != 3) {
-            throw IllegalArgumentException("Cannot detect QR code: found ${qrMarkers.size} markers")
+            throw QrDetectionFailedException("Cannot detect QR code: found ${qrMarkers.size} markers")
         }
 
         val angle = QrRotationAngleCalculator.calculateQrCodeAngle(qrMarkers.map { it.center })

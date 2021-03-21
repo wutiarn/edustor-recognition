@@ -11,8 +11,10 @@ import org.opencv.core.Mat
 import org.opencv.core.RotatedRect
 import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
+import ru.wtrn.edustor.edustorrecognition.util.qr.QrDetectionFailedException
 import java.awt.image.BufferedImage
 import java.io.File
+import kotlin.math.roundToInt
 
 internal class QRMarkersDetectorTest {
 
@@ -22,15 +24,33 @@ internal class QRMarkersDetectorTest {
 
     @Test
     fun testNormalPage() {
-        testQrMarkersDetection("test_page.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
+        val detectionResult = testQrMarkersDetection("normal_page.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
+        Assertions.assertEquals(detectionResult.angle.roundToInt(), 0)
+        Assertions.assertEquals(3, detectionResult.detectedMarkers.potentialMarkers.size)
+    }
+
+    @Test
+    fun testRotatedPage() {
+        val detectionResult = testQrMarkersDetection("rotated_page.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
+        Assertions.assertEquals(detectionResult.angle.roundToInt(), -90)
     }
 
     @Test
     fun testRotatedWithExtraContoursPage() {
-        testQrMarkersDetection("test_page2.jpeg", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
+        val detectionResult = testQrMarkersDetection("rotated_with_extra_contours.jpeg", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
+        Assertions.assertEquals(detectionResult.angle.roundToInt(), -217)
+        Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size > 3)
     }
 
-    fun testQrMarkersDetection(imageName: String, expectedPayload: String) {
+    @Test
+    fun testQrCodeMarker() {
+        val exception = Assertions.assertThrows(QrDetectionFailedException::class.java) {
+            testQrMarkersDetection("qr_code_marker.jpeg", null)
+        }
+        Assertions.assertEquals("Cannot detect QR code: found 1 markers", exception.message)
+    }
+
+    fun testQrMarkersDetection(imageName: String, expectedPayload: String?): QRMarkersDetector.DetectionResult {
         val detector = QRMarkersDetector()
         val image = javaClass.getResource("/$imageName").readBytes().toBufferedImage()
         val outDirectory = File(baseOutDirectory, imageName.split(".").first()).also {
@@ -52,10 +72,14 @@ internal class QRMarkersDetectorTest {
         val detectionResult = detector.detect(image)
         drawQrArea(srcMat.clone(), detectionResult.qrArea, outDirectory)
 
-        File(outDirectory, "05_qr.png").writeBytes(detectionResult.qrMat.toPng())
+        File(outDirectory, "06_qr.png").writeBytes(detectionResult.qrMat.toPng())
 
-        val qrPayload = readBarcode(detectionResult.qrMat.toBufferedImage())
-        Assertions.assertEquals(expectedPayload, qrPayload)
+        expectedPayload?.let {
+            val qrPayload = readBarcode(detectionResult.qrMat.toBufferedImage())
+            Assertions.assertEquals(expectedPayload, qrPayload)
+        }
+
+        return detectionResult
     }
 
     private fun drawPotentialMarkers(mat: Mat, list: List<QRMarkersDetector.PotentialMarker>, outDirectory: File) {
@@ -81,13 +105,13 @@ internal class QRMarkersDetectorTest {
         markerListOfPoints.forEachIndexed { i, _ ->
             Imgproc.drawContours(mat, markerListOfPoints, i, color, 1)
         }
-        File(outDirectory, "03_markers.png").writeBytes(mat.toPng())
+        File(outDirectory, "04_markers.png").writeBytes(mat.toPng())
     }
 
     private fun drawQrArea(mat: Mat, qrArea: RotatedRect, outDirectory: File) {
         val color = Scalar(0.0, 255.0, 0.0)
         Imgproc.drawContours(mat, listOf(qrArea.toMatOfPoint()), 0, color, 1)
-        File(outDirectory, "04_qr_area.png").writeBytes(mat.toPng())
+        File(outDirectory, "05_qr_area.png").writeBytes(mat.toPng())
     }
 
     private fun readBarcode(image: BufferedImage): String {
