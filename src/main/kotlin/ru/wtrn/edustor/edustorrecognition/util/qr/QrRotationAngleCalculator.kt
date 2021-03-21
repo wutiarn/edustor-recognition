@@ -2,9 +2,7 @@ package ru.wtrn.edustor.edustorrecognition.util.qr
 
 import org.opencv.core.Point
 import java.lang.IllegalStateException
-import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.sqrt
+import kotlin.math.*
 
 object QrRotationAngleCalculator {
     fun calculateQrCodeAngle(metaMarker: Point, qrMarkersLocation: List<Point>): Double {
@@ -32,8 +30,19 @@ object QrRotationAngleCalculator {
         val rotationRad = Math.atan(slope) //  +Pi/2 is because OpenCV has inverted Y axis (zero is at top left corner, not at bottom left)
         var rotationDegrees = rotationRad * 180 / Math.PI - 90// Convert rad to degrees
 
+        /**
+         * Tan has 180 degrees period (from -90 deg to 90 deg). We subtract 90 degrees above, which can lead to period overflow.
+         * So we add period value to make sure value is within valid boundaries.
+         */
+        if (rotationDegrees.absoluteValue > 90) {
+            rotationDegrees += -1 * rotationDegrees.sign * 180
+        }
+
+        /**
+         * Tan cannot determine whether page is upside down or not. But we can do it using meta marker (since it is located higher than qr markers).
+         * Note, that OpenCV axis starts at top left corner, so Y axis is inverted
+         */
         if (metaMarker.y > rightQrMarker.y) {
-            // Page is upside down (since meta marker is higher than qr markers, and Y axis is inverted)
             rotationDegrees -= 180
         }
 

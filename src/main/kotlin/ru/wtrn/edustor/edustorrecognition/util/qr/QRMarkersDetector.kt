@@ -27,9 +27,9 @@ class QRMarkersDetector() {
         }
 
         val angle = QrRotationAngleCalculator.calculateQrCodeAngle(metaMarker = detectedMarkers.metaMarker.center, qrMarkers.map { it.center })
-        val qrArea = findQrArea(qrMarkers)
+        val qrArea = findArea(qrMarkers)
 
-        val rotationMat = constructRotationMatrix(srcMat, angle * -1)
+        val rotationMat = constructRotationMatrix(srcMat, angle)
         val rotatedImage = Mat()
         Imgproc.warpAffine(srcMat, rotatedImage, rotationMat, srcMat.size())
 
@@ -40,13 +40,19 @@ class QRMarkersDetector() {
         val qrMat = rotatedImage.submat(rotatedQrArea)
         Imgproc.cvtColor(qrMat, qrMat, Imgproc.COLOR_RGB2GRAY)
 
+        val qrAndMetaMarkersArea = findArea(qrMarkers.plus(detectedMarkers.metaMarker))
+        val rotatedQrAndMetaMarkersAreaMat = MatOfPoint()
+        Core.transform(qrAndMetaMarkersArea.toMatOfPoint(), rotatedQrAndMetaMarkersAreaMat, rotationMat)
+        val rotatedQrAndMetaMarkersArea = Imgproc.boundingRect(rotatedQrAndMetaMarkersAreaMat)
+
+
         return DetectionResult(
                 qrArea = qrArea,
                 qrMat = qrMat,
                 angle = angle, // TODO: Calculate actual qr code rotation
                 detectedMarkers = detectedMarkers,
                 imageMat = loadedMat,
-                rotatedQrArea = rotatedQrArea,
+                rotatedQrAndMetaMarkersArea = rotatedQrAndMetaMarkersArea,
                 rotatedImageMat = rotatedImage
         )
     }
@@ -57,7 +63,7 @@ class QRMarkersDetector() {
         return Imgproc.getRotationMatrix2D(center, angle, 1.0)
     }
 
-    private fun findQrArea(qrMarkers: List<RotatedRect>): RotatedRect {
+    private fun findArea(qrMarkers: List<RotatedRect>): RotatedRect {
         val concatMat = MatOfPoint()
         Core.vconcat(qrMarkers.map { it.toMatOfPoint() }, concatMat)
         val mat2f = MatOfPoint2f()
@@ -199,7 +205,7 @@ class QRMarkersDetector() {
     private fun validateMarkerAreaRatio(internalContour: RotatedRect, externalContour: RotatedRect): PotentialMarker.RejectionReason? {
         val areaRatio = internalContour.size.area() / externalContour.size.area()
         val perfectRatio = 0.1836
-        val maxRatioDelta = 0.03
+        val maxRatioDelta = 0.045
         val ratioDelta = abs(areaRatio - perfectRatio)
         if (ratioDelta > maxRatioDelta) {
             return PotentialMarker.RejectionReason.INCORRECT_AREA_RATIO
@@ -256,7 +262,7 @@ class QRMarkersDetector() {
             val angle: Double,
             val detectedMarkers: MarkerDetectionResult,
             val imageMat: LoadedImageMat,
-            val rotatedQrArea: Rect,
+            val rotatedQrAndMetaMarkersArea: Rect,
             val rotatedImageMat: Mat
     )
 

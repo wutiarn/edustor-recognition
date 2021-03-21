@@ -25,27 +25,20 @@ internal class QRMarkersDetectorTest {
 
     @Test
     fun testNormalPage() {
-        val detectionResult = testQrMarkersDetection("normal_page.png", "https://edustor.wtrn.ru/p/8-JTUelutguApusLCAPFTmBXfqwC")
+        val detectionResult = testQrMarkersDetection("normal_page.png", "https://edustor.wtrn.ru/p/PUNOrbAi9Kdi919XEGxcCGBXnb0B")
         Assertions.assertTrue(detectionResult.angle.roundToInt().absoluteValue < 5)
     }
 
     @Test
     fun testHorizontalPage() {
-        testQrMarkersDetection("horizontal_page.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
+        testQrMarkersDetection("horizontal_page.png", "https://edustor.wtrn.ru/p/PUNOrbAi9Kdi919XEGxcCGBXnb0B")
     }
 
     @Test
     fun testRotatedWithExtraContoursPage() {
-        val detectionResult = testQrMarkersDetection("rotated_with_extra_contours.png", "https://edustor.wtrn.ru/p/8-JTUelutguApusLCAPFTmBXfqwC")
+        val detectionResult = testQrMarkersDetection("test_with_extra_contours.png", "https://edustor.wtrn.ru/p/PUNOrbAi9Kdi919XEGxcCGBXnb0B")
         Assertions.assertEquals(-218, detectionResult.angle.roundToInt())
         Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size > 10)
-    }
-
-    @Test
-    fun testSkewedAndRotated() {
-        val detectionResult = testQrMarkersDetection("skewed_and_rotated.png", "https://edustor.wtrn.ru/p/RwHT26QYC0Macch730Fv82BSaVUJ")
-        Assertions.assertEquals(-179, detectionResult.angle.roundToInt())
-        Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size == 4)
     }
 
     @Test
@@ -91,7 +84,7 @@ internal class QRMarkersDetectorTest {
             Assertions.assertEquals(expectedPayload, qrPayload)
         }
 
-        val metaFieldsArea = MetaFieldsExtractor.getArea(detectionResult.rotatedImageMat, detectionResult.rotatedQrArea)
+        val metaFieldsArea = MetaFieldsExtractor.getArea(detectionResult.rotatedImageMat, detectionResult.rotatedQrAndMetaMarkersArea)
         drawMetaFieldsArea(detectionResult.rotatedImageMat.clone(), metaFieldsArea, outDirectory)
         return detectionResult
     }
