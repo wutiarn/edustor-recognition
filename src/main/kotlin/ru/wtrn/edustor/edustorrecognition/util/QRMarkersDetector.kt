@@ -86,7 +86,7 @@ class QRMarkersDetector() {
         val qrCodeMarkerContourLayers = 5
         val qrMarkers = contours.mapIndexedNotNull { i, contour ->
             val parentsCount = calculateParentsCount(contourIndex = i, hierarchy = hierarchy, parentsCache = parentsCache)
-            if (parentsCount < 5) {
+            if (parentsCount < qrCodeMarkerContourLayers) {
                 return@mapIndexedNotNull null
             }
 
