@@ -82,10 +82,12 @@ class QRMarkersDetector() {
 
         val parentsCache = HashMap<Int, Int>()
 
-        val qrCodeMarkerContourLayers = 5
         val qrMarkers = contours.mapIndexedNotNull { i, contour ->
+            if (!checkHasNoChildContour(i, hierarchy)) {
+                return@mapIndexedNotNull null
+            }
             val parentsCount = calculateParentsCount(contourIndex = i, hierarchy = hierarchy, parentsCache = parentsCache)
-            if (parentsCount < qrCodeMarkerContourLayers) {
+            if (parentsCount < 3) {
                 return@mapIndexedNotNull null
             }
 
@@ -95,23 +97,7 @@ class QRMarkersDetector() {
                     index = i,
                     contour = internalContour)
             potentialMarkers.add(potentialMarker)
-
-            val externalContourIndex = (0 until qrCodeMarkerContourLayers)
-                    .fold(i) { childIndex, _ ->
-                        val parentIndex = getParentIndex(childIndex, hierarchy)!!
-                        potentialMarker.parents.add(
-                                PotentialMarker(
-                                        index = parentIndex,
-                                        contour = getMinAreaRect(contours[parentIndex])
-                                )
-                        )
-                        parentIndex
-                    }
-            val externalContour = getMinAreaRect(contours[externalContourIndex])
-            when {
-                validateMarker(internalContour, externalContour) -> externalContour
-                else -> null
-            }
+            findExternalContour(potentialMarker, hierarchy, contours)
         }
 
         return MarkerDetectionResult(
@@ -122,35 +108,75 @@ class QRMarkersDetector() {
         )
     }
 
+    private fun findExternalContour(potentialMarker: PotentialMarker, hierarchy: Mat, contours: List<MatOfPoint>): RotatedRect? {
+        val internalIndex = potentialMarker.index
+        val internalContour = potentialMarker.contour
+
+        var externalContour: RotatedRect? = null
+        var middleLayersCount: Int = -1
+        var parentIndex = getParentIndex(internalIndex, hierarchy)!!
+        while (true) {
+            val candidate = getMinAreaRect(contours[parentIndex])
+            val rejectionReason = validateMarkerFormAndCenterDistance(internalContour, candidate)
+            if (rejectionReason != null) {
+                if (externalContour == null) {
+                    // Set rejectionReason only if we didn't find any external contours
+                    potentialMarker.parentContour = candidate
+                    potentialMarker.rejectionReason = rejectionReason
+                }
+                break
+            }
+            externalContour = candidate
+            middleLayersCount++
+            parentIndex = getParentIndex(parentIndex, hierarchy) ?: break
+        }
+
+        potentialMarker.parentContour = externalContour
+        potentialMarker.externalContourMiddleLayersCount = middleLayersCount
+
+        if (middleLayersCount < 1) {
+            potentialMarker.rejectionReason = PotentialMarker.RejectionReason.NOT_ENOUGH_MIDDLE_LAYERS
+            return null
+        }
+
+        return externalContour?.takeIf {
+            val rejectionReason = validateMarkerAreaRatio(internalContour, externalContour)
+            potentialMarker.rejectionReason = rejectionReason
+            rejectionReason == null
+        }
+    }
+
     private fun getMinAreaRect(mop: MatOfPoint): RotatedRect {
         val point2f = MatOfPoint2f()
         mop.convertTo(point2f, CvType.CV_32FC2)
         return Imgproc.minAreaRect(point2f)
     }
 
-    private fun validateMarker(internalContour: RotatedRect, externalContour: RotatedRect): Boolean {
+    private fun validateMarkerFormAndCenterDistance(internalContour: RotatedRect, externalContour: RotatedRect): PotentialMarker.RejectionReason? {
         // Check that both rectangles has square form
         if (!checkHasSquareForm(internalContour) || !checkHasSquareForm(externalContour)) {
-            return false
+            return PotentialMarker.RejectionReason.NON_SQUARE_FORM
         }
 
         // Check that both rectangles has same center
         val maxCenterDistance = (internalContour.size.width * 0.01).coerceAtLeast(1.0)
         val centerDistance = externalContour.center.dist(internalContour.center)
         if (centerDistance > maxCenterDistance) {
-            return false
+            return PotentialMarker.RejectionReason.INCORRECT_CENTER_DISTANCE
         }
 
-        // Check that rectangles has appropriate area ratio
+        return null // TODO: Implement marker validation
+    }
+
+    private fun validateMarkerAreaRatio(internalContour: RotatedRect, externalContour: RotatedRect): PotentialMarker.RejectionReason? {
         val areaRatio = internalContour.size.area() / externalContour.size.area()
         val perfectRatio = 0.1836
         val maxRatioDelta = 0.05
         val ratioDelta = abs(areaRatio - perfectRatio)
         if (ratioDelta > maxRatioDelta) {
-            return false
+            return PotentialMarker.RejectionReason.INCORRECT_AREA_RATIO
         }
-
-        return true // TODO: Implement marker validation
+        return null
     }
 
     /**
@@ -163,7 +189,12 @@ class QRMarkersDetector() {
         return actualPixelDelta <= maxPixelDelta
     }
 
-    internal fun calculateParentsCount(contourIndex: Int, hierarchy: Mat, parentsCache: HashMap<Int, Int>): Int {
+    private fun checkHasNoChildContour(contourIndex: Int, hierarchy: Mat): Boolean {
+        val hierarchyMeta = hierarchy[0, contourIndex]
+        return hierarchyMeta[2] < 0
+    }
+
+    private fun calculateParentsCount(contourIndex: Int, hierarchy: Mat, parentsCache: HashMap<Int, Int>): Int {
         parentsCache[contourIndex]?.let {
             return it
         }
@@ -211,6 +242,15 @@ class QRMarkersDetector() {
     data class PotentialMarker(
             val index: Int,
             val contour: RotatedRect,
-            val parents: MutableList<PotentialMarker> = mutableListOf()
-    )
+            var parentContour: RotatedRect? = null,
+            var externalContourMiddleLayersCount: Int? = null,
+            var rejectionReason: RejectionReason? = null
+    ) {
+        enum class RejectionReason {
+            NOT_ENOUGH_MIDDLE_LAYERS,
+            NON_SQUARE_FORM,
+            INCORRECT_CENTER_DISTANCE,
+            INCORRECT_AREA_RATIO
+        }
+    }
 }

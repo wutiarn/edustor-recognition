@@ -29,7 +29,7 @@ internal class QRMarkersDetectorTest {
     fun testNormalPage() {
         val detectionResult = testQrMarkersDetection("normal_page.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
         Assertions.assertEquals(detectionResult.angle.roundToInt(), 0)
-        Assertions.assertEquals(3, detectionResult.detectedMarkers.potentialMarkers.size)
+        Assertions.assertEquals(4, detectionResult.detectedMarkers.potentialMarkers.size)
     }
 
     @Test
@@ -41,6 +41,12 @@ internal class QRMarkersDetectorTest {
     @Test
     fun testRotatedWithExtraContoursPage() {
         val detectionResult = testQrMarkersDetection("rotated_with_extra_contours.jpeg", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
+        Assertions.assertEquals(detectionResult.angle.roundToInt(), -217)
+        Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size > 3)
+    }
+    @Test
+    fun testSkewedAndRotated() {
+        val detectionResult = testQrMarkersDetection("skewed_and_rotated.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
         Assertions.assertEquals(detectionResult.angle.roundToInt(), -217)
         Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size > 3)
     }
@@ -87,9 +93,9 @@ internal class QRMarkersDetectorTest {
 
     private fun drawPotentialMarkers(mat: Mat, list: List<QRMarkersDetector.PotentialMarker>, outDirectory: File) {
         val innerContours = list.map { it.contour.toMatOfPoint() }
-        val parentContours = list.flatMap { it.parents }.map { it.contour.toMatOfPoint() }
+        val parentContours = list.mapNotNull { it.parentContour?.toMatOfPoint() }
 
-        val innerColor = Scalar(0.0, 0.0, 255.0)
+        val innerColor = Scalar(0.0, 255.0, 255.0)
         val parentColor = Scalar(0.0, 255.0, 0.0)
 
         innerContours.forEachIndexed { i, _ ->
