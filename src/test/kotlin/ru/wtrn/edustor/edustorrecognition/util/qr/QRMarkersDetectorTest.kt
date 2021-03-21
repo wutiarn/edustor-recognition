@@ -36,7 +36,7 @@ internal class QRMarkersDetectorTest {
 
     @Test
     fun testRotatedWithExtraContoursPage() {
-        val detectionResult = testQrMarkersDetection("rotated_with_extra_contours.jpeg", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
+        val detectionResult = testQrMarkersDetection("rotated_with_extra_contours.png", "https://edustor.wtrn.ru/p/8-JTUelutguApusLCAPFTmBXfqwC")
         Assertions.assertEquals(-218, detectionResult.angle.roundToInt())
         Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size > 10)
     }

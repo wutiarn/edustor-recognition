@@ -26,10 +26,10 @@ class QRMarkersDetector() {
             throw QrDetectionFailedException("Cannot detect QR code: found ${qrMarkers.size} markers")
         }
 
-        val angle = QrRotationAngleCalculator.calculateQrCodeAngle(qrMarkers.map { it.center })
+        val angle = QrRotationAngleCalculator.calculateQrCodeAngle(metaMarker = detectedMarkers.metaMarker.center, qrMarkers.map { it.center })
         val qrArea = findQrArea(qrMarkers)
 
-        val rotationMat = constructRotationMatrix(srcMat, angle)
+        val rotationMat = constructRotationMatrix(srcMat, angle * -1)
         val rotatedImage = Mat()
         Imgproc.warpAffine(srcMat, rotatedImage, rotationMat, srcMat.size())
 
