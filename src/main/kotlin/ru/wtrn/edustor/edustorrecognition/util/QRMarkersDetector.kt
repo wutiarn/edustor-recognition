@@ -4,6 +4,7 @@ import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
 import java.awt.image.BufferedImage
 import java.lang.IllegalArgumentException
+import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -108,16 +109,18 @@ class QRMarkersDetector() {
             return false
         }
 
+        // Check that both rectangles has same center
         val maxCenterDistance = (internalContour.size.width * 0.01).coerceAtLeast(1.0)
         val centerDistance = calculateDistance(externalContour.center, internalContour.center)
         if (centerDistance > maxCenterDistance) {
             return false
         }
 
+        // Check that rectangles has appropriate area ratio
         val areaRatio = internalContour.size.area() / externalContour.size.area()
-        val perfectRatio = 0.2
+        val perfectRatio = 0.1836
         val maxRatioDelta = 0.05
-        val ratioDelta = Math.abs(areaRatio - perfectRatio)
+        val ratioDelta = abs(areaRatio - perfectRatio)
         if (ratioDelta > maxRatioDelta) {
             return false
         }
