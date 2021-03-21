@@ -35,19 +35,19 @@ internal class QRMarkersDetectorTest {
     @Test
     fun testRotatedPage() {
         val detectionResult = testQrMarkersDetection("rotated_page.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
-        Assertions.assertEquals(detectionResult.angle.roundToInt(), -90)
+        Assertions.assertEquals(-90, detectionResult.angle.roundToInt())
     }
 
     @Test
     fun testRotatedWithExtraContoursPage() {
         val detectionResult = testQrMarkersDetection("rotated_with_extra_contours.jpeg", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
-        Assertions.assertEquals(detectionResult.angle.roundToInt(), -217)
+        Assertions.assertEquals(-218, detectionResult.angle.roundToInt())
         Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size > 3)
     }
     @Test
     fun testSkewedAndRotated() {
-        val detectionResult = testQrMarkersDetection("skewed_and_rotated.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
-        Assertions.assertEquals(detectionResult.angle.roundToInt(), -217)
+        val detectionResult = testQrMarkersDetection("skewed_and_rotated.png", "https://edustor.wtrn.ru/p/RwHT26QYC0Macch730Fv82BSaVUJ")
+        Assertions.assertEquals(-179, detectionResult.angle.roundToInt())
         Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size > 3)
     }
 
