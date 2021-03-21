@@ -2,6 +2,7 @@ package ru.wtrn.edustor.edustorrecognition.util.qr
 
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
+import ru.wtrn.edustor.edustorrecognition.util.MetaMarkerDifferentiator
 import ru.wtrn.edustor.edustorrecognition.util.toMat
 import ru.wtrn.edustor.edustorrecognition.util.toMatOfPoint
 import java.awt.image.BufferedImage
@@ -128,11 +129,14 @@ class QRMarkersDetector() {
             findExternalContour(potentialMarker, hierarchy, contours)
         }
 
+        val metaMarker = MetaMarkerDifferentiator.findMetaMarker(qrMarkers)
+
         return MarkerDetectionResult(
                 contours = contours,
                 potentialMarkers = potentialMarkers,
                 hierarchy = hierarchy,
-                qrMarkers = qrMarkers
+                qrMarkers = qrMarkers.filter { it != metaMarker },
+                metaMarker = metaMarker
         )
     }
 
@@ -263,6 +267,7 @@ class QRMarkersDetector() {
 
     data class MarkerDetectionResult(
             val qrMarkers: List<RotatedRect>,
+            val metaMarker: RotatedRect,
             val potentialMarkers: List<PotentialMarker>,
             val contours: List<MatOfPoint>,
             val hierarchy: Mat

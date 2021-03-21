@@ -14,6 +14,7 @@ import ru.wtrn.edustor.edustorrecognition.util.toMatOfPoint
 import ru.wtrn.edustor.edustorrecognition.util.toPng
 import java.awt.image.BufferedImage
 import java.io.File
+import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 internal class QRMarkersDetectorTest {
@@ -24,9 +25,8 @@ internal class QRMarkersDetectorTest {
 
     @Test
     fun testNormalPage() {
-        val detectionResult = testQrMarkersDetection("normal_page.png", "https://edustor.wtrn.ru/p/6eXLrkP5HKyJZjWDTQ1lyGBR7cMB")
-        Assertions.assertEquals(detectionResult.angle.roundToInt(), 0)
-        Assertions.assertEquals(4, detectionResult.detectedMarkers.potentialMarkers.size)
+        val detectionResult = testQrMarkersDetection("normal_page.png", "https://edustor.wtrn.ru/p/8-JTUelutguApusLCAPFTmBXfqwC")
+        Assertions.assertTrue(detectionResult.angle.roundToInt().absoluteValue < 5)
     }
 
     @Test

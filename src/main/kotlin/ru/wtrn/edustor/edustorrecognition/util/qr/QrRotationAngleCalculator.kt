@@ -41,7 +41,7 @@ object QrRotationAngleCalculator {
         val d2 = distances[1]
 
         val delta = abs(d1 - d2)
-        val maxDelta = d1 * 0.01
+        val maxDelta = d1 * 0.05
         return delta < maxDelta
     }
 
