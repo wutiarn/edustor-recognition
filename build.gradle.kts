@@ -25,6 +25,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.2")
+    implementation("com.google.zxing:javase:3.4.1")
     implementation(group = "", name = "spire-pdf-free-4.3.0") // SpirePDF has been downloaded to avoid using proprietary IceBlue repo
     implementation(group = "", name = "opencv-451")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

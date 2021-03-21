@@ -1,5 +1,9 @@
 package ru.wtrn.edustor.edustorrecognition.util
 
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource
+import com.google.zxing.common.HybridBinarizer
+import com.google.zxing.qrcode.QRCodeReader
 import org.junit.jupiter.api.Test
 import org.opencv.core.Core
 import org.opencv.core.Mat
@@ -36,9 +40,10 @@ internal class QRMarkersDetectorTest {
         Imgproc.drawContours(srcMat, listOf(qrArea.rect.toMatOfPoint()), 0, color, 1)
         File(outDirectory, "04_qr_area.png").writeBytes(srcMat.toPng())
 
-        val openCvDetector = QRCodeDetector()
-
-        val cvQrPoints = Mat()
-        val detectedQr = openCvDetector.detectAndDecode(qrArea.qrMat, cvQrPoints)
+        val zxingReader = QRCodeReader()
+        val luminanceSource = BufferedImageLuminanceSource(qrArea.qrMat.toBufferedImage())
+        val binarizer = HybridBinarizer(luminanceSource)
+        val binaryBitmap = BinaryBitmap(binarizer)
+        val result = zxingReader.decode(binaryBitmap)
     }
 }
