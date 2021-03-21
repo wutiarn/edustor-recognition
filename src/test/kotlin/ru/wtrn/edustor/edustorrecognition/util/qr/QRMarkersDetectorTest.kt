@@ -88,6 +88,7 @@ internal class QRMarkersDetectorTest {
         drawQrArea(srcMat.clone(), detectionResult.qrArea, outDirectory)
 
         File(outDirectory, "06_qr.png").writeBytes(detectionResult.qrMat.toPng())
+        File(outDirectory, "07_rotated_image.png").writeBytes(detectionResult.rotatedImageMat.toPng())
 
         expectedPayload?.let {
             val qrPayload = readBarcode(detectionResult.qrMat.toBufferedImage())

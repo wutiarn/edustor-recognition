@@ -17,6 +17,8 @@ class QRMarkersDetector() {
 
     fun detect(image: BufferedImage): DetectionResult {
         val loadedMat = loadMat(image)
+        val srcMat = loadedMat.srcMat
+
         val detectedMarkers = detectMarkers(loadedMat)
         val qrMarkers: List<RotatedRect> = detectedMarkers.qrMarkers
         if (qrMarkers.size != 3) {
@@ -25,27 +27,32 @@ class QRMarkersDetector() {
 
         val angle = QrRotationAngleCalculator.calculateQrCodeAngle(qrMarkers.map { it.center })
         val qrArea = findQrArea(qrMarkers)
-        val qrMat = loadedMat.srcMat.submat(qrArea.boundingRect())
-        Imgproc.cvtColor(qrMat, qrMat, Imgproc.COLOR_RGB2GRAY)
 
-        val rotated = rotateImage(loadedMat.srcMat, angle)
+        val rotationMat = constructRotationMatrix(srcMat, angle)
+        val rotatedImage = Mat()
+        Imgproc.warpAffine(srcMat, rotatedImage, rotationMat, srcMat.size())
+
+        val rotatedQrAreaMat = MatOfPoint()
+        Core.transform(qrArea.toMatOfPoint(), rotatedQrAreaMat, rotationMat)
+        val rotatedQrArea = Imgproc.boundingRect(rotatedQrAreaMat)
+
+        val qrMat = rotatedImage.submat(rotatedQrArea)
+        Imgproc.cvtColor(qrMat, qrMat, Imgproc.COLOR_RGB2GRAY)
 
         return DetectionResult(
                 qrArea = qrArea,
                 qrMat = qrMat,
                 angle = angle, // TODO: Calculate actual qr code rotation
                 detectedMarkers = detectedMarkers,
-                imageMat = loadedMat
+                imageMat = loadedMat,
+                rotatedImageMat = rotatedImage
         )
     }
 
-    private fun rotateImage(srcMat: Mat, angle: Double): Mat {
-        val dstMat = Mat()
+    private fun constructRotationMatrix(srcMat: Mat, angle: Double): Mat {
         val matSize = srcMat.size()
         val center = Point(matSize.width / 2, matSize.height / 2)
-        val rotationMat = Imgproc.getRotationMatrix2D(center, angle, 1.0)
-        Imgproc.warpAffine(srcMat, dstMat, rotationMat, matSize)
-        return dstMat
+        return Imgproc.getRotationMatrix2D(center, angle, 1.0)
     }
 
     private fun findQrArea(qrMarkers: List<RotatedRect>): RotatedRect {
@@ -237,7 +244,8 @@ class QRMarkersDetector() {
             val qrMat: Mat,
             val angle: Double,
             val detectedMarkers: MarkerDetectionResult,
-            val imageMat: LoadedImageMat
+            val imageMat: LoadedImageMat,
+            val rotatedImageMat: Mat
     )
 
     data class LoadedImageMat(
