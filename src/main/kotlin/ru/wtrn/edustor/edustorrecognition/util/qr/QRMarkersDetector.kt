@@ -45,6 +45,7 @@ class QRMarkersDetector() {
                 angle = angle, // TODO: Calculate actual qr code rotation
                 detectedMarkers = detectedMarkers,
                 imageMat = loadedMat,
+                rotatedQrArea = rotatedQrArea,
                 rotatedImageMat = rotatedImage
         )
     }
@@ -251,6 +252,7 @@ class QRMarkersDetector() {
             val angle: Double,
             val detectedMarkers: MarkerDetectionResult,
             val imageMat: LoadedImageMat,
+            val rotatedQrArea: Rect,
             val rotatedImageMat: Mat
     )
 

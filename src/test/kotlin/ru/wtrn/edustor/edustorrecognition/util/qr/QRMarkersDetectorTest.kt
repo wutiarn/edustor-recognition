@@ -6,12 +6,9 @@ import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.opencv.core.Mat
-import org.opencv.core.RotatedRect
-import org.opencv.core.Scalar
+import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
-import ru.wtrn.edustor.edustorrecognition.util.qr.QRMarkersDetector
-import ru.wtrn.edustor.edustorrecognition.util.qr.QrDetectionFailedException
+import ru.wtrn.edustor.edustorrecognition.util.MetaFieldsExtractor
 import ru.wtrn.edustor.edustorrecognition.util.toBufferedImage
 import ru.wtrn.edustor.edustorrecognition.util.toMatOfPoint
 import ru.wtrn.edustor.edustorrecognition.util.toPng
@@ -94,6 +91,8 @@ internal class QRMarkersDetectorTest {
             Assertions.assertEquals(expectedPayload, qrPayload)
         }
 
+        val metaFieldsArea = MetaFieldsExtractor.getArea(detectionResult.rotatedImageMat, detectionResult.rotatedQrArea)
+        drawMetaFieldsArea(detectionResult.rotatedImageMat.clone(), metaFieldsArea, outDirectory)
         return detectionResult
     }
 
@@ -126,6 +125,13 @@ internal class QRMarkersDetectorTest {
         val color = Scalar(0.0, 255.0, 0.0)
         Imgproc.drawContours(mat, listOf(qrArea.toMatOfPoint()), 0, color, 1)
         File(outDirectory, "05_qr_area.png").writeBytes(mat.toPng())
+    }
+
+    private fun drawMetaFieldsArea(mat: Mat, metaFieldsArea: Rect, outDirectory: File) {
+        val color = Scalar(0.0, 255.0, 0.0)
+
+        Imgproc.rectangle(mat, metaFieldsArea, color, 1)
+        File(outDirectory, "08_meta_fields.png").writeBytes(mat.toPng())
     }
 
     private fun readBarcode(image: BufferedImage): String {
