@@ -24,7 +24,7 @@ class QRMarkersDetector() {
             throw IllegalArgumentException("Cannot detect QR code: found ${qrMarkers.size} markers")
         }
 
-        val angle = calculateQrCodeAngle(qrMarkers)
+        val angle = calculateQrCodeAngle(qrMarkers.map { it.center })
         val qrArea = findQrArea(qrMarkers)
         val qrMat = loadedMat.srcMat.submat(qrArea.boundingRect())
         Imgproc.cvtColor(qrMat, qrMat, Imgproc.COLOR_RGB2GRAY)
@@ -104,7 +104,7 @@ class QRMarkersDetector() {
         )
     }
 
-    private fun calculateQrCodeAngle(qrMarkers: List<RotatedRect>): Double {
+    private fun calculateQrCodeAngle(qrMarkersLocation: List<Point>): Double {
         return 0.0
     }
 
