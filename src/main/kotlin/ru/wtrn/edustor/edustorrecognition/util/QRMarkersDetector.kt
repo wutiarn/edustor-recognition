@@ -168,7 +168,6 @@ class QRMarkersDetector() {
         parentsCache[contourIndex]?.let {
             return it
         }
-
         val hierarchyMeta = hierarchy[0, contourIndex]
         val parentIndex = hierarchyMeta[3]
         if (parentIndex < 0) {
