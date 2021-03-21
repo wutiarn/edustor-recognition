@@ -4,6 +4,8 @@ import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
 import java.awt.image.BufferedImage
 import java.lang.IllegalArgumentException
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class QRMarkersDetector() {
 
@@ -82,7 +84,7 @@ class QRMarkersDetector() {
             val externalContour = getMinAreaRect(contours[externalContourIndex])
             val internalContour = getMinAreaRect(contour)
             when {
-                validateQrMarker(internalContour, externalContour) -> externalContour
+                checkHasSquareForm(internalContour, externalContour) -> externalContour
                 else -> null
             }
         }
@@ -100,16 +102,41 @@ class QRMarkersDetector() {
         return Imgproc.minAreaRect(point2f)
     }
 
-    private fun validateQrMarker(internalContour: RotatedRect, externalContour: RotatedRect): Boolean {
-        if (!validateQrMarker(internalContour) || !validateQrMarker(externalContour)) {
+    private fun checkHasSquareForm(internalContour: RotatedRect, externalContour: RotatedRect): Boolean {
+        // Check that both rectangles has square form
+        if (!checkHasSquareForm(internalContour) || !checkHasSquareForm(externalContour)) {
             return false
         }
-        return true // TODO: Implement marker valiation
+
+        val maxCenterDistance = (internalContour.size.width * 0.01).coerceAtLeast(1.0)
+        val centerDistance = calculateDistance(externalContour.center, internalContour.center)
+        if (centerDistance > maxCenterDistance) {
+            return false
+        }
+
+        val areaRatio = internalContour.size.area() / externalContour.size.area()
+        val perfectRatio = 0.2
+        val maxRatioDelta = 0.05
+        val ratioDelta = Math.abs(areaRatio - perfectRatio)
+        if (ratioDelta > maxRatioDelta) {
+            return false
+        }
+
+        return true // TODO: Implement marker validation
     }
 
-    private fun validateQrMarker(contour: RotatedRect): Boolean {
-        val aspectRatio = contour.size.width / contour.size.height
-        return Math.abs(aspectRatio - 1.0) < 0.2
+    private fun calculateDistance(p1: Point, p2: Point): Double {
+        return sqrt((p1.x - p2.x).pow(2) + (p1.y - p2.y).pow(2))
+    }
+
+    /**
+     * Check that marker has square form
+     */
+    private fun checkHasSquareForm(contour: RotatedRect): Boolean {
+        // Allow up to 10% width/height difference (or up to 2 pixels if 10% is smaller).
+        val maxPixelDelta = (contour.size.width * 0.1).coerceAtLeast(2.0)
+        val actualPixelDelta = Math.abs(contour.size.width - contour.size.height)
+        return actualPixelDelta < maxPixelDelta
     }
 
     internal fun calculateParentsCount(contourIndex: Int, hierarchy: Mat, parentsCache: HashMap<Int, Int>): Int {
