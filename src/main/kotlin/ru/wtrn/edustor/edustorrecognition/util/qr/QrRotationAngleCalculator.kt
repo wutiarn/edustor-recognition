@@ -13,20 +13,26 @@ object QrRotationAngleCalculator {
         }
 
         var other = listOf<Point>()
-        val topLeftPoint = qrMarkersLocation.first { candidate ->
+        val outlierPoint = qrMarkersLocation.first { candidate ->
             other = qrMarkersLocation.filter { it != candidate }
             isTopLeft(candidate, other)
         }
 
+        other = other.sortedBy { it.x }
+
         val p1 = other[0]
         val p2 = other[1]
 
-        val slope = calculateSlope(p1, p2)
-        val perpendicularDistance = calculatePerpendicularDistance(topLeftPoint, p1, p2)
-        val rotationRad = Math.atan(slope) - Math.PI / 4
+        val slope = calculateSlope(p1, p2) // OpenCV has inverted Y axis (zero is at top left corner, not at bottom left)
+        val perpendicularDistance = calculatePerpendicularDistance(outlierPoint, p1, p2)
+        val rotationRad = Math.atan(slope) - Math.PI / 4 + Math.PI / 2
+        var rotationDegrees = rotationRad * 180 / Math.PI // Convert rad to degrees
 
-        val rotationDegrees = rotationRad * 180 / Math.PI
-        return rotationDegrees // Convert rad to degrees
+        if (perpendicularDistance > 0) {
+            rotationDegrees -= 180
+        }
+
+        return rotationDegrees
     }
 
     private fun isTopLeft(point: Point, other: List<Point>): Boolean {
@@ -40,7 +46,7 @@ object QrRotationAngleCalculator {
     }
 
     private fun calculateSlope(p1: Point, p2: Point): Double {
-        return p1.y - p2.y / p1.x - p2.x
+        return (p1.y - p2.y) / (p1.x - p2.x)
     }
 
     private fun calculatePerpendicularDistance(point: Point, lineP1: Point, lineP2: Point): Double {
@@ -51,9 +57,6 @@ object QrRotationAngleCalculator {
         val c = (slope * lineP2.x) - lineP2.y
 
         val dist = (a * point.x + b * point.y + c) / sqrt(a.pow(2) + b.pow(2))
-
-        val wikiFormula = abs((lineP2.x - lineP1.x) * (lineP1.y - point.y) - (lineP1.x - point.x) * (lineP2.y - lineP1.y)) /
-                sqrt((lineP2.x - lineP1.x).pow(2) + (lineP2.y - lineP1.y).pow(2))
         return dist
     }
 }
