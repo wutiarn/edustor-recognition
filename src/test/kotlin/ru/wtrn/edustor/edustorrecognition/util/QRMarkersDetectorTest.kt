@@ -19,7 +19,7 @@ internal class QRMarkersDetectorTest {
     @Test
     fun testQrMarkersDetection() {
         val detector = QRMarkersDetector()
-        val image = javaClass.getResource("/test_page.png").readBytes().toBufferedImage()
+        val image = javaClass.getResource("/test_page2.jpeg").readBytes().toBufferedImage()
 
         val loadedImageMat = detector.loadMat(image)
         val srcMat = loadedImageMat.srcMat.clone()
