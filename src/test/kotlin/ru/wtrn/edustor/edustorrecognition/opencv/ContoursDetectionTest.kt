@@ -9,9 +9,9 @@ import ru.wtrn.edustor.edustorrecognition.util.toPng
 import java.io.File
 
 
-class OpenCVQRDetectionTest {
+class ContoursDetectionTest {
 
-    private val outDirectory = File("build/test-results/img/qr").also {
+    private val outDirectory = File("build/test-results/img/contours").also {
         it.mkdirs()
     }
 
@@ -19,8 +19,9 @@ class OpenCVQRDetectionTest {
     fun testOpenCV() {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
-        val srcMat = javaClass.getResource("/test_page.png").readBytes().toImageMat()
+        val srcMat = javaClass.getResource("/normal_page.png").readBytes().toImageMat()
         val mat = Mat()
+        Imgproc.cvtColor(srcMat, srcMat, Imgproc.COLOR_RGBA2RGB)
         Imgproc.cvtColor(srcMat, mat, Imgproc.COLOR_RGB2GRAY)
         Imgproc.blur(mat, mat, Size(3.0, 3.0))
         Core.bitwise_not(mat, mat)
