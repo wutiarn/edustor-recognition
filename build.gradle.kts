@@ -16,6 +16,7 @@ repositories {
     flatDir {
         dir("libs")
         dir("/usr/local/Cellar/opencv/4.5.1_3/share/java/opencv4") // OpenCV on MacOS
+        dir("C:\\Program Files\\opencv\\build\\java") // OpenCV on Windows
     }
 }
 
