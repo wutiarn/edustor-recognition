@@ -11,7 +11,7 @@ object MetaFieldsExtractor {
 
     fun getArea(qrAndMetaArea: Rect): Rect {
         /**
-         * 0.4 is size of marker side, 0.5 - margin between marker and grid.
+         * 0.4 is size of marker side, 0.25 - margin between marker and grid.
          * Both of these values are fractions of single cell side.
          */
         val markerCellHeight = 0.4 + 0.25
