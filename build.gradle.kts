@@ -23,7 +23,7 @@ repositories {
     mavenCentral()
     flatDir {
         dir("libs")
-        dir("/usr/share/java/opencv4") // OpenCV on Ubuntu
+//        dir("/usr/share/java/opencv4") // OpenCV on Ubuntu
 //        dir("/usr/local/Cellar/opencv/4.5.1_3/share/java/opencv4") // OpenCV on MacOS
 //        dir("C:\\Program Files\\opencv\\build\\java") // OpenCV on Windows
     }
@@ -37,7 +37,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.2")
     implementation("com.google.zxing:javase:3.4.1")
     implementation("org.apache.pdfbox:pdfbox:2.0.22")
-    implementation(group = "", name = "opencv-453")
+    implementation(group = "", name = "opencv-454")
     kapt("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
