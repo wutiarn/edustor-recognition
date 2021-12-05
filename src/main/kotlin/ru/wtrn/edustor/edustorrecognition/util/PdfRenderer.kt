@@ -1,21 +1,17 @@
 package ru.wtrn.edustor.edustorrecognition.util
 
-import org.ghost4j.document.PDFDocument
-import org.ghost4j.renderer.SimpleRenderer
+import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.rendering.PDFRenderer
 import java.awt.image.BufferedImage
 import java.io.Closeable
 import java.io.InputStream
 
 class PdfRenderer(pdfStream: InputStream, resolution: Int = 150) : Iterator<BufferedImage>, Closeable {
-    private val renderer = SimpleRenderer().also {
-        it.resolution = resolution
-    }
-    private val pdfDocument: PDFDocument = PDFDocument().also {
-        it.load(pdfStream)
-    }
+    private val pdfDocument: PDDocument = PDDocument.load(pdfStream)
+    private val renderer = PDFRenderer(pdfDocument)
 
     private var nextPage = 0
-    private val lastPage: Int = pdfDocument.pageCount - 1
+    private val lastPage: Int = pdfDocument.numberOfPages - 1
 
     override fun hasNext(): Boolean {
         return nextPage <= lastPage
@@ -24,10 +20,10 @@ class PdfRenderer(pdfStream: InputStream, resolution: Int = 150) : Iterator<Buff
     override fun next(): BufferedImage {
         if (!hasNext()) throw NoSuchElementException()
         val curPage = nextPage++
-        return renderer.render(pdfDocument, curPage, curPage)[0] as BufferedImage
+        return renderer.renderImage(curPage)
     }
 
     override fun close() {
-        // Nothing here for now
+        pdfDocument.close()
     }
 }
