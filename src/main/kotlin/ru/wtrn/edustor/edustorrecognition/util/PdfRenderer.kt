@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage
 import java.io.Closeable
 import java.io.InputStream
 
-class PdfRenderer(pdfStream: InputStream, resolution: Int = 150) : Iterator<BufferedImage>, Closeable {
+class PdfRenderer(pdfStream: InputStream, resolution: Int = 300) : Iterator<BufferedImage>, Closeable {
     private val pdfDocument: PDDocument = PDDocument.load(pdfStream)
     private val renderer = PDFRenderer(pdfDocument)
     private val scale = resolution / 72f

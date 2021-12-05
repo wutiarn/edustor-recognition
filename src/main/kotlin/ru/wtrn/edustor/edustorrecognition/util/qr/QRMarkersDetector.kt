@@ -206,7 +206,7 @@ class QRMarkersDetector() {
     private fun validateMarkerAreaRatio(internalContour: RotatedRect, externalContour: RotatedRect): PotentialMarker.RejectionReason? {
         val areaRatio = internalContour.size.area() / externalContour.size.area()
         val perfectRatio = 0.1836
-        val maxRatioDelta = 0.045
+        val maxRatioDelta = 0.06
         val ratioDelta = abs(areaRatio - perfectRatio)
         if (ratioDelta > maxRatioDelta) {
             return PotentialMarker.RejectionReason.INCORRECT_AREA_RATIO
