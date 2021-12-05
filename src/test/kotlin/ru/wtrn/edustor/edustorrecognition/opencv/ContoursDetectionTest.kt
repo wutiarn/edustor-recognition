@@ -3,7 +3,6 @@ package ru.wtrn.edustor.edustorrecognition.opencv
 import org.junit.jupiter.api.Test
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
-import org.opencv.objdetect.QRCodeDetector
 import ru.wtrn.edustor.edustorrecognition.util.toImageMat
 import ru.wtrn.edustor.edustorrecognition.util.toPng
 import java.io.File
@@ -19,7 +18,7 @@ class ContoursDetectionTest {
     fun testOpenCV() {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
-        val srcMat = javaClass.getResource("/normal_page.png").readBytes().toImageMat()
+        val srcMat = javaClass.getResource("/test_page.png").readBytes().toImageMat()
         val mat = Mat()
         Imgproc.cvtColor(srcMat, srcMat, Imgproc.COLOR_RGBA2RGB)
         Imgproc.cvtColor(srcMat, mat, Imgproc.COLOR_RGB2GRAY)

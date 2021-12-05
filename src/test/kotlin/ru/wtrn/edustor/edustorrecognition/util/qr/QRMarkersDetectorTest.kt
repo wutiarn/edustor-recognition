@@ -1,17 +1,10 @@
 package ru.wtrn.edustor.edustorrecognition.util.qr
 
-import com.google.zxing.BinaryBitmap
-import com.google.zxing.client.j2se.BufferedImageLuminanceSource
-import com.google.zxing.common.HybridBinarizer
-import com.google.zxing.qrcode.QRCodeReader
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
-import ru.wtrn.edustor.edustorrecognition.util.MetaFieldsExtractor
-import ru.wtrn.edustor.edustorrecognition.util.toBufferedImage
-import ru.wtrn.edustor.edustorrecognition.util.toMatOfPoint
-import ru.wtrn.edustor.edustorrecognition.util.toPng
+import ru.wtrn.edustor.edustorrecognition.util.*
 import java.awt.image.BufferedImage
 import java.io.File
 import kotlin.math.absoluteValue
@@ -19,37 +12,52 @@ import kotlin.math.roundToInt
 
 internal class QRMarkersDetectorTest {
 
+    companion object {
+        init {
+            System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
+        }
+    }
+
     private val baseOutDirectory = File("build/test-results/img/qr").also {
         it.mkdirs()
     }
 
+    private val expectedPayload = "https://edustor.wtrn.ru/p/PUNOrbAi9Kdi919XEGxcCGBXnb0B"
+
     @Test
     fun testNormalPage() {
-        val detectionResult = testQrMarkersDetection("normal_page.png", "https://edustor.wtrn.ru/p/PUNOrbAi9Kdi919XEGxcCGBXnb0B")
+        val image = javaClass.getResource("/test_page.png").readBytes().toBufferedImage()
+        val detectionResult = testQrMarkersDetection(image, "normal_page", expectedPayload)
         Assertions.assertTrue(detectionResult.angle.roundToInt().absoluteValue < 5)
     }
 
     @Test
     fun testRotatedPage() {
-        val detectionResult = testQrMarkersDetection("rotated_page.png", "https://edustor.wtrn.ru/p/PUNOrbAi9Kdi919XEGxcCGBXnb0B")
+        val mat = javaClass.getResource("/test_page.png").readBytes().toImageMat()
+        val targetMat = Mat()
+        Core.rotate(mat, targetMat, Core.ROTATE_180)
+        val detectionResult = testQrMarkersDetection(targetMat.toBufferedImage(), "rotated_page", expectedPayload)
         Assertions.assertTrue(detectionResult.angle.roundToInt().absoluteValue > 175)
     }
 
     @Test
     fun testHorizontalPage() {
-        testQrMarkersDetection("horizontal_page.png", "https://edustor.wtrn.ru/p/PUNOrbAi9Kdi919XEGxcCGBXnb0B")
+        val mat = javaClass.getResource("/test_page.png").readBytes().toImageMat()
+        val targetMat = Mat()
+        Core.rotate(mat, targetMat, Core.ROTATE_90_CLOCKWISE)
+        testQrMarkersDetection(targetMat.toBufferedImage(),"horizontal_page", expectedPayload)
     }
 
     @Test
     fun testWithExtraContoursPage() {
-        val detectionResult = testQrMarkersDetection("test_with_extra_contours.png", "https://edustor.wtrn.ru/p/PUNOrbAi9Kdi919XEGxcCGBXnb0B")
+        val image = javaClass.getResource("/test_with_extra_contours.png").readBytes().toBufferedImage()
+        val detectionResult = testQrMarkersDetection(image,"test_with_extra_contours", "https://edustor.wtrn.ru/p/PUNOrbAi9Kdi919XEGxcCGBXnb0B")
         Assertions.assertTrue(detectionResult.detectedMarkers.potentialMarkers.size > 10)
     }
 
-    fun testQrMarkersDetection(imageName: String, expectedPayload: String?): QRMarkersDetector.DetectionResult {
+    private fun testQrMarkersDetection(image: BufferedImage, imageName: String, expectedPayload: String?): QRMarkersDetector.DetectionResult {
         val detector = QRMarkersDetector()
-        val image = javaClass.getResource("/$imageName").readBytes().toBufferedImage()
-        val outDirectory = File(baseOutDirectory, imageName.split(".").first()).also {
+        val outDirectory = File(baseOutDirectory, imageName).also {
             it.mkdirs()
         }
 

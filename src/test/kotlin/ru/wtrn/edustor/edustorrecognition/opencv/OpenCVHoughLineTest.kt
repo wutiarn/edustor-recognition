@@ -18,7 +18,7 @@ class OpenCVHoughLineTest {
     fun testOpenCV() {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
-        val srcMat = javaClass.getResource("/normal_page.png").readBytes().toImageMat()
+        val srcMat = javaClass.getResource("/test_page.png").readBytes().toImageMat()
         val mat = Mat()
         Imgproc.cvtColor(srcMat, srcMat, Imgproc.COLOR_RGBA2RGB)
         Imgproc.cvtColor(srcMat, mat, Imgproc.COLOR_RGB2GRAY)
