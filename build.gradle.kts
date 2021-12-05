@@ -16,8 +16,9 @@ repositories {
     mavenCentral()
     flatDir {
         dir("libs")
-        dir("/usr/local/Cellar/opencv/4.5.1_3/share/java/opencv4") // OpenCV on MacOS
-        // dir("C:\\Program Files\\opencv\\build\\java") // OpenCV on Windows
+        dir("/usr/share/java/opencv4") // OpenCV on Ubuntu
+//        dir("/usr/local/Cellar/opencv/4.5.1_3/share/java/opencv4") // OpenCV on MacOS
+//        dir("C:\\Program Files\\opencv\\build\\java") // OpenCV on Windows
     }
 }
 
@@ -32,7 +33,7 @@ dependencies {
         group = "",
         name = "spire-pdf-free-4.3.0"
     ) // SpirePDF has been downloaded to avoid using proprietary IceBlue repo
-    implementation(group = "", name = "opencv-451")
+    implementation(group = "", name = "opencv-453")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
