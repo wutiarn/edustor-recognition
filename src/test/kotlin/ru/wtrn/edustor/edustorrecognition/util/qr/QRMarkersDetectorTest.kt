@@ -22,7 +22,7 @@ internal class QRMarkersDetectorTest {
         it.mkdirs()
     }
 
-    private val expectedPayload = "https://edustor.wtrn.ru/p/PUNOrbAi9Kdi919XEGxcCGBXnb0B"
+    private val expectedPayload = "https://edustor.wtrn.ru/p/917128303644119040"
 
     @Test
     fun testNormalPage() {
