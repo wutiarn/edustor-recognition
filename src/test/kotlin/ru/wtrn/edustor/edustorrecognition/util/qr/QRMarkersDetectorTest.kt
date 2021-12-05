@@ -86,7 +86,7 @@ internal class QRMarkersDetectorTest {
         }
 
         val metaFieldsArea = MetaFieldsExtractor.getArea(detectionResult.rotatedQrAndMetaMarkersArea)
-        drawMetaFieldsArea(detectionResult.rotatedImageMat.clone(), metaFieldsArea, outDirectory)
+        drawMetaFieldsArea(detectionResult.rotatedImageMat.clone(), metaFieldsArea, detectionResult.rotatedQrAndMetaMarkersArea, outDirectory)
         return detectionResult
     }
 
@@ -121,10 +121,11 @@ internal class QRMarkersDetectorTest {
         File(outDirectory, "05_qr_area.png").writeBytes(mat.toPng())
     }
 
-    private fun drawMetaFieldsArea(mat: Mat, metaFieldsArea: Rect, outDirectory: File) {
+    private fun drawMetaFieldsArea(mat: Mat, metaFieldsArea: Rect, rotatedQrAndMetaMarkersArea: Rect, outDirectory: File) {
         val color = Scalar(0.0, 255.0, 0.0)
 
         Imgproc.rectangle(mat, metaFieldsArea, color, 1)
+        Imgproc.rectangle(mat, rotatedQrAndMetaMarkersArea, color, 1)
         File(outDirectory, "08_meta_fields.png").writeBytes(mat.toPng())
     }
 }
