@@ -37,6 +37,14 @@ internal class QRMarkersDetectorTest {
         val detectionResult = testQrMarkersDetection(image, "normal_page", expectedPayload)
         Assertions.assertTrue(detectionResult.angle.roundToInt().absoluteValue < 5)
     }
+
+    @Test
+    fun testNormalPage2() {
+        val image = javaClass.getResource("/test_page2.png").readBytes().toBufferedImage()
+        val detectionResult = testQrMarkersDetection(image, "normal_page2", "https://edustor.wtrn.ru/p/917128303631536128")
+        Assertions.assertTrue(detectionResult.angle.roundToInt().absoluteValue < 5)
+    }
+
     @Test
     fun testRotatedPage() {
         val image = javaClass.getResource("/rotated_page.png").readBytes().toBufferedImage()
@@ -144,7 +152,7 @@ internal class QRMarkersDetectorTest {
         File(outDirectory, "09_meta_fields.png").writeBytes(metaFieldsMat.toPng())
 
         Imgproc.rectangle(mat, metaFieldsArea, color, 1)
-//        Imgproc.rectangle(mat, rotatedQrAndMetaMarkersArea, color, 1)
+        Imgproc.rectangle(mat, rotatedQrAndMetaMarkersArea, color, 1)
         File(outDirectory, "08_meta_fields_location.png").writeBytes(mat.toPng())
     }
 }
