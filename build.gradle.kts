@@ -37,7 +37,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.2")
     implementation("com.google.zxing:javase:3.4.1")
     implementation("org.apache.pdfbox:pdfbox:2.0.22")
-    implementation(group = "", name = "opencv-454")
+    implementation(group = "", name = "opencv-453")
     kapt("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
