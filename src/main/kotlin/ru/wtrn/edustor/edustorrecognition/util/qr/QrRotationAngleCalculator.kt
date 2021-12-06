@@ -24,7 +24,12 @@ object QrRotationAngleCalculator {
         val pageIsUpsideDown = metaMarker.center.y > rightQrMarker.center.y
 
         val metaMarkerXOffset = (rightQrMarker.size.width * META_MARKER_X_OFFSET_COEFFICIENT).roundToInt()
-        // Find most right marker points instead of center
+
+        /**
+         * Find most right marker points instead of center one.
+         * This is necessary becase meta marker is smaller than QR one, but they are (almost) aligned by the right edge
+         * (see META_MARKER_X_OFFSET_COEFFICIENT above).
+         */
         val slopePoints =
             if (!pageIsUpsideDown) Pair(
                 metaMarker.toPointsArray().maxByOrNull { it.x }!!,
