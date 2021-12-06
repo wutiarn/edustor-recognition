@@ -37,14 +37,20 @@ internal class QRMarkersDetectorTest {
         val detectionResult = testQrMarkersDetection(image, "normal_page", expectedPayload)
         Assertions.assertTrue(detectionResult.angle.roundToInt().absoluteValue < 5)
     }
-
     @Test
     fun testRotatedPage() {
-        val mat = javaClass.getResource("/test_page.png").readBytes().toImageMat()
+        val image = javaClass.getResource("/rotated_page.png").readBytes().toBufferedImage()
+        val detectionResult = testQrMarkersDetection(image, "rotated_page", expectedPayload)
+        Assertions.assertEquals(8, detectionResult.angle.toInt())
+    }
+
+    @Test
+    fun testUpsideDownPage() {
+        val mat = javaClass.getResource("/rotated_page.png").readBytes().toImageMat()
         val targetMat = Mat()
         Core.rotate(mat, targetMat, Core.ROTATE_180)
-        val detectionResult = testQrMarkersDetection(targetMat.toBufferedImage(), "rotated_page", expectedPayload)
-        Assertions.assertTrue(detectionResult.angle.roundToInt().absoluteValue > 175)
+        val detectionResult = testQrMarkersDetection(targetMat.toBufferedImage(), "upside_down_page", expectedPayload)
+        Assertions.assertEquals(-171, detectionResult.angle.toInt())
     }
 
     @Test

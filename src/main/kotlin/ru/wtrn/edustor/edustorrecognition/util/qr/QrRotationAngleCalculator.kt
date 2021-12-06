@@ -34,9 +34,13 @@ object QrRotationAngleCalculator {
             )
 
         val slope = calculateSlope(slopePoints.first, slopePoints.second)
-        val rotationRad =
-            atan(slope) //  +Pi/2 is because OpenCV has inverted Y axis (zero is at top left corner, not at bottom left)
-        var rotationDegrees = rotationRad * 180 / Math.PI - 90// Convert rad to degrees
+        val rotationRad = atan(slope)
+
+        /**
+         * Convert rad to degrees.
+         * Subtract 90 degrees to get page rotation angle from 0, not from Pi/2.
+         */
+        var rotationDegrees = rotationRad * 180 / Math.PI - 90
 
         /**
          * Tan has 180 degrees period (from -90 deg to 90 deg). We subtract 90 degrees above, which can lead to period overflow.
