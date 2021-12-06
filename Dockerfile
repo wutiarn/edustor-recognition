@@ -1,5 +1,7 @@
 FROM ubuntu:21.10
-RUN apt update && apt install -y openjdk-17-jdk libopencv4.5-java
+RUN sed -i 's|http://archive.|http://ru.archive.|g' /etc/apt/sources.list \
+    && apt update \
+    && apt install -y openjdk-17-jdk libopencv4.5-java
 
 WORKDIR /app
 COPY gradle gradlew settings.gradle.kts build.gradle.kts /app/
