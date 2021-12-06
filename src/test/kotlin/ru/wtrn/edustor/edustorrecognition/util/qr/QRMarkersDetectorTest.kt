@@ -25,6 +25,13 @@ internal class QRMarkersDetectorTest {
     private val expectedPayload = "https://edustor.wtrn.ru/p/917128303644119040"
 
     @Test
+    fun testDigitalPage() {
+        val image = javaClass.getResource("/digital_page.png").readBytes().toBufferedImage()
+        val detectionResult = testQrMarkersDetection(image, "digital_page", "https://edustor.wtrn.ru/p/917440436001095680")
+        Assertions.assertTrue(detectionResult.angle.roundToInt().absoluteValue < 5)
+    }
+
+    @Test
     fun testNormalPage() {
         val image = javaClass.getResource("/test_page.png").readBytes().toBufferedImage()
         val detectionResult = testQrMarkersDetection(image, "normal_page", expectedPayload)

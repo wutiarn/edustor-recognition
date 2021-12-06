@@ -13,11 +13,20 @@ class PdfRenderTest {
     }
 
     @Test
-    fun renderToImage() {
-        val fileBytes = javaClass.getResource("/test_page.pdf").readBytes()
+    fun test_scanned_page() {
+        renderToImage("test_page")
+    }
+
+    @Test
+    fun test_digital_page() {
+        renderToImage("digital_page")
+    }
+
+    private fun renderToImage(name: String) {
+        val fileBytes = javaClass.getResource("/$name.pdf").readBytes()
         val image = PdfRenderer(fileBytes.inputStream()).use {
             it.next()
         }
-        File(outDirectory, "test_page.png").writeBytes(image.toPng())
+        File(outDirectory, "$name.png").writeBytes(image.toPng())
     }
 }
