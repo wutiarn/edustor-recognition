@@ -86,11 +86,11 @@ class QRMarkersDetector() {
         val mat = Mat()
         Imgproc.cvtColor(srcMat, srcMat, Imgproc.COLOR_RGBA2RGB)
         Imgproc.cvtColor(srcMat, mat, Imgproc.COLOR_RGB2GRAY)
-        Imgproc.blur(mat, mat, Size(3.0, 3.0))
+//        Imgproc.blur(mat, mat, Size(3.0, 3.0))
         Core.bitwise_not(mat, mat)
-        Imgproc.threshold(mat, mat, 100.0, 255.0, Imgproc.THRESH_BINARY)
+        Imgproc.threshold(mat, mat, 70.0, 255.0, Imgproc.THRESH_BINARY)
 //        Core.bitwise_not(mat, mat)
-        Imgproc.Canny(mat, mat, 5.0, 30.0, 3, false)
+//        Imgproc.Canny(mat, mat, 5.0, 30.0, 3, false)
 
 //        Imgproc.blur(mat, mat, Size(3.0, 3.0))
 //        Imgproc.threshold(mat, mat, 100.0, 255.0, Imgproc.THRESH_BINARY)
@@ -123,7 +123,7 @@ class QRMarkersDetector() {
                 return@mapIndexedNotNull null
             }
             val parentsCount = calculateParentsCount(contourIndex = i, hierarchy = hierarchy, parentsCache = parentsCache)
-            if (parentsCount < 3) {
+            if (parentsCount < 2) {
                 return@mapIndexedNotNull null
             }
 
