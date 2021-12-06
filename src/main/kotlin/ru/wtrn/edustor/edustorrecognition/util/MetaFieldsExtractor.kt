@@ -2,6 +2,8 @@ package ru.wtrn.edustor.edustorrecognition.util
 
 import org.opencv.core.Mat
 import org.opencv.core.Rect
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 object MetaFieldsExtractor {
     fun extract(imageMat: Mat, qrAndMetaArea: Rect): Mat {
@@ -17,10 +19,10 @@ object MetaFieldsExtractor {
         val markerCellHeight = 0.4 + 0.25
         val cellSide = qrAndMetaArea.height / (56 + markerCellHeight)
         return Rect(
-            (qrAndMetaArea.x + qrAndMetaArea.width - cellSide * 8).toInt(),
-            (qrAndMetaArea.y + 1 + cellSide * markerCellHeight).toInt(), // +1 here fixes "off by one error" (probably)
-            (cellSide * 8).toInt(),
-            (cellSide * 2).toInt()
+            (qrAndMetaArea.x + qrAndMetaArea.width - cellSide * 8).toInt(), // +1 here fixes "off by one error" (probably)
+            ceil(qrAndMetaArea.y + cellSide * markerCellHeight).toInt(),
+            (cellSide * 8).roundToInt() + 1,
+            (cellSide * 2).roundToInt() + 1
         )
     }
 }

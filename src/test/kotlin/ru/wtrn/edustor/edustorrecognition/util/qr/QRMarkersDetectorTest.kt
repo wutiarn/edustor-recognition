@@ -138,7 +138,7 @@ internal class QRMarkersDetectorTest {
         File(outDirectory, "09_meta_fields.png").writeBytes(metaFieldsMat.toPng())
 
         Imgproc.rectangle(mat, metaFieldsArea, color, 1)
-        Imgproc.rectangle(mat, rotatedQrAndMetaMarkersArea, color, 1)
+//        Imgproc.rectangle(mat, rotatedQrAndMetaMarkersArea, color, 1)
         File(outDirectory, "08_meta_fields_location.png").writeBytes(mat.toPng())
     }
 }
