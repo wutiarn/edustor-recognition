@@ -20,7 +20,7 @@ object MetaFieldsExtractor {
         val cellSide = qrAndMetaArea.height / (56 + markerCellHeight)
         return Rect(
             (qrAndMetaArea.x + qrAndMetaArea.width - cellSide * 8).toInt(), // +1 here fixes "off by one error" (probably)
-            ceil(qrAndMetaArea.y + cellSide * markerCellHeight).toInt(),
+            (qrAndMetaArea.y + cellSide * markerCellHeight).toInt(),
             (cellSide * 8).roundToInt() + 1,
             (cellSide * 2).roundToInt() + 1
         )
