@@ -8,7 +8,7 @@ import kotlin.math.*
 
 object QrRotationAngleCalculator {
     // Meta marker is smaller and is located a bit righter than right QR code marker.
-    private const val META_MARKER_X_OFFSET = 2
+    private const val META_MARKER_X_OFFSET_COEFFICIENT = 0.075
 
     fun calculateQrCodeAngle(metaMarker: RotatedRect, qrMarkersLocation: List<RotatedRect>): Double {
         if (qrMarkersLocation.size != 3) {
@@ -23,14 +23,15 @@ object QrRotationAngleCalculator {
          */
         val pageIsUpsideDown = metaMarker.center.y > rightQrMarker.center.y
 
-        // Find right marker points instead of
+        val metaMarkerXOffset = (rightQrMarker.size.width * META_MARKER_X_OFFSET_COEFFICIENT).roundToInt()
+        // Find most right marker points instead of center
         val slopePoints =
             if (!pageIsUpsideDown) Pair(
                 metaMarker.toPointsArray().maxByOrNull { it.x }!!,
-                rightQrMarker.toPointsArray().maxByOrNull { it.x }!!.also { it.x += META_MARKER_X_OFFSET }
+                rightQrMarker.toPointsArray().maxByOrNull { it.x }!!.also { it.x += metaMarkerXOffset }
             ) else Pair(
                 metaMarker.toPointsArray().minByOrNull { it.x }!!,
-                rightQrMarker.toPointsArray().minByOrNull { it.x }!!.also { it.x -= META_MARKER_X_OFFSET }
+                rightQrMarker.toPointsArray().minByOrNull { it.x }!!.also { it.x -= metaMarkerXOffset }
             )
 
         val slope = calculateSlope(slopePoints.first, slopePoints.second)
