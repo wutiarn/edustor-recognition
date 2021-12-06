@@ -15,8 +15,9 @@ class PdfRenderTest {
     @Test
     fun renderToImage() {
         val fileBytes = javaClass.getResource("/test_page.pdf").readBytes()
-        val renderer = PdfRenderer(fileBytes.inputStream())
-        val image = renderer.next()
+        val image = PdfRenderer(fileBytes.inputStream()).use {
+            it.next()
+        }
         File(outDirectory, "test_page.png").writeBytes(image.toPng())
     }
 }

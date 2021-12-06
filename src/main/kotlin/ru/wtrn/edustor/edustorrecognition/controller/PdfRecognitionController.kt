@@ -18,8 +18,9 @@ class PdfRecognitionController {
 
     @RequestMapping("/pdf/meta", produces = ["image/png"])
     fun recognizePdf(@RequestBody file: ByteArray, response: HttpServletResponse): ByteArray {
-        val renderer = PdfRenderer(file.inputStream())
-        val image = renderer.next()
+        val image = PdfRenderer(file.inputStream()).use {
+            it.next()
+        }
 
         val detector = QRMarkersDetector()
         val detectionResult = detector.detect(image)
