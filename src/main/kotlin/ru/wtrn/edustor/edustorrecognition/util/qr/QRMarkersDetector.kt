@@ -30,7 +30,7 @@ class QRMarkersDetector() {
             throw QrDetectionFailedException("Cannot detect QR code: found ${qrMarkers.size} markers")
         }
 
-        val angle = QrRotationAngleCalculator.calculateQrCodeAngle(metaMarker = metaMarker.center, qrMarkers.map { it.center })
+        val angle = QrRotationAngleCalculator.calculateQrCodeAngle(metaMarker = metaMarker, qrMarkers)
         val qrArea = findArea(qrMarkers)
 
         val rotationMat = constructRotationMatrix(srcMat, angle)
