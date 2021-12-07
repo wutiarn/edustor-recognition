@@ -93,6 +93,7 @@ internal class QRMarkersDetectorTest {
         drawPotentialMarkers(srcMat.clone(), markerDetectionResult.potentialMarkers, outDirectory)
 
         drawMarkers(srcMat.clone(), markerDetectionResult.qrMarkers, outDirectory)
+        drawMarkersBoundingBox(srcMat.clone(), markerDetectionResult.qrMarkers, outDirectory)
 
         val detectionResult = detector.detect(image)
         drawQrArea(srcMat.clone(), detectionResult.qrArea, outDirectory)
@@ -136,7 +137,23 @@ internal class QRMarkersDetectorTest {
         markerListOfPoints.forEachIndexed { i, _ ->
             Imgproc.drawContours(mat, markerListOfPoints, i, color, 1)
         }
-        File(outDirectory, "04_markers.png").writeBytes(mat.toPng())
+
+        File(outDirectory, "04_1_markers.png").writeBytes(mat.toPng())
+    }
+
+    private fun drawMarkersBoundingBox(mat: Mat, qrMarkers: List<RotatedRect>, outDirectory: File) {
+        val color = Scalar(0.0, 255.0, 0.0)
+        val concatMat = MatOfPoint()
+        Core.vconcat(qrMarkers.map { it.toMatOfPoint() }, concatMat)
+        Imgproc.drawContours(mat, listOf(concatMat), 0, color, 1)
+
+        val mat2f = MatOfPoint2f()
+        concatMat.convertTo(mat2f, CvType.CV_32FC2)
+        val minAreaRect = Imgproc.minAreaRect(mat2f)
+
+        Imgproc.drawContours(mat, listOf(minAreaRect.toMatOfPoint()), 0, Scalar(0.0, 0.0, 255.0), 1)
+
+        File(outDirectory, "04_2_markers_bounding_box.png").writeBytes(mat.toPng())
     }
 
     private fun drawQrArea(mat: Mat, qrArea: RotatedRect, outDirectory: File) {
